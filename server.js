@@ -266,6 +266,11 @@ app.get('/api/stats/activity', (_req, res) => {
   res.status(410).json({ error: 'activity endpoint removed; use /api/stats/global recentActivity from indexed program accounts' });
 });
 
+app.get(['/admin', '/admin/'], (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 app.get('*', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

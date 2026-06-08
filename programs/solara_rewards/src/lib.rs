@@ -117,6 +117,15 @@ pub mod solara_rewards {
         Ok(())
     }
 
+    pub fn update_rates(ctx: Context<AdminControl>, rates_per_minute: [u64; TIER_COUNT]) -> Result<()> {
+        ctx.accounts.config.assert_admin(&ctx.accounts.admin)?;
+        for rate in rates_per_minute {
+            require!(rate > 0, SolaraError::InvalidTierRate);
+        }
+        ctx.accounts.config.tier_rates = rates_per_minute;
+        Ok(())
+    }
+
     pub fn admin_withdraw(ctx: Context<AdminWithdraw>, amount: u64) -> Result<()> {
         validate_admin_withdraw(
             &ctx.accounts.config,

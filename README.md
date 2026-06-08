@@ -93,9 +93,9 @@ REWARD_VAULT_INITIAL_FUND_AMOUNT=1000
 WITHDRAW_DESTINATION_TOKEN_ACCOUNT=<admin SOLR token account>
 ```
 
-The admin keypair is local only. Contract deployment, config initialization,
-vault funding, pause/resume, rate updates, and vault withdrawal must be done
-locally from the admin machine.
+The admin keypair is local only. Contract deployment and script-based admin
+operations must be done locally from the admin machine. Browser admin actions
+use `/admin` and are signed by the connected wallet extension.
 
 ## Anchor Build
 
@@ -242,6 +242,37 @@ Requirements:
 - `WITHDRAW_DESTINATION_TOKEN_ACCOUNT` must be a SOLR token account.
 - Vercel and Railway must never receive `ADMIN_KEYPAIR_PATH`.
 
+## Admin Panel
+
+Open:
+
+```text
+https://<your-domain>/admin
+```
+
+Connect the configured admin wallet. The page unlocks only when the connected
+wallet address equals `ADMIN_WALLET_PUBLIC_KEY`.
+
+Admin actions available from the browser:
+
+- Fund vault: transfers SOLR from the admin wallet SOLR ATA to the
+  program-owned reward vault.
+- Pause rewards: calls `pause()`.
+- Resume rewards: calls `resume()`.
+- Update rates: calls `update_rates([rtx4090, a100, h100])`.
+- Withdraw vault funds: calls `admin_withdraw(amount)` to the admin wallet
+  SOLR ATA.
+- Refresh state: reloads config, vault balance, tier rates, and indexed global
+  stats.
+
+Security rules:
+
+- Only the public admin wallet address goes in Vercel or Railway envs.
+- Never upload the admin private key to Vercel or Railway.
+- All `/admin` actions are signed from Phantom, Solflare, or Backpack.
+- The backend never signs admin transactions.
+- The reward vault remains owned by the Config PDA.
+
 ## Final Go-Live Checklist
 
 Before launch:
@@ -263,6 +294,7 @@ npm run admin:fund-vault -- 1000
 npm run admin:update-rates
 npm run admin:pause
 npm run admin:resume
+npm run admin:withdraw -- 1000
 ```
 
 ## Dashboard Data
