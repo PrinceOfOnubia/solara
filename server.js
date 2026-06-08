@@ -4,7 +4,12 @@ const crypto = require('crypto');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { Connection, PublicKey } = require('@solana/web3.js');
+
+let web3Promise;
+function solanaWeb3() {
+  if (!web3Promise) web3Promise = import('@solana/web3.js');
+  return web3Promise;
+}
 
 (() => {
   try {
@@ -77,8 +82,9 @@ function requiredConfigPresent() {
   return Boolean(RPC_URL && PROGRAM_ID && SOLR_MINT && REWARD_VAULT);
 }
 
-function connection() {
+async function connection() {
   if (!RPC_URL) throw new Error('SOLANA_RPC_URL is required');
+  const { Connection } = await solanaWeb3();
   return new Connection(RPC_URL, 'confirmed');
 }
 
@@ -90,7 +96,7 @@ function readU64LE(buf, offset) {
   return buf.readBigUInt64LE(offset);
 }
 
-function decodeUserValidator(data) {
+function decodeUserValidator(data, PublicKey) {
   if (data.length < USER_VALIDATOR_SIZE) return null;
   if (!data.subarray(0, 8).equals(USER_VALIDATOR_DISC)) return null;
   let o = 8;
@@ -157,7 +163,8 @@ async function globalStats() {
     };
   }
 
-  const conn = connection();
+  const { PublicKey } = await solanaWeb3();
+  const conn = await connection();
   const programId = new PublicKey(PROGRAM_ID);
   const accounts = await conn.getProgramAccounts(programId, {
     filters: [
@@ -170,7 +177,7 @@ async function globalStats() {
   let totalClaimed = 0n;
   const validators = [];
   for (const account of accounts) {
-    const decoded = decodeUserValidator(account.account.data);
+    const decoded = decodeUserValidator(account.account.data, PublicKey);
     if (!decoded) continue;
     validators.push(decoded);
     if (decoded.active) activeValidators += 1;
