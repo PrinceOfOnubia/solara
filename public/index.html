@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOLARA Mainnet Rewards</title>
+  <link rel="icon" href="/favicon.png">
+  <style>
+    :root{
+      --bg:#fff8f1;--panel:rgba(255,255,255,.72);--ink:#24180f;--muted:#7b6654;
+      --line:rgba(160,96,44,.22);--brand:#f36b21;--brand2:#ffb26d;--dark:#1a110b;
+      --green:#18945c;--red:#c93822;--shadow:0 18px 50px rgba(112,63,25,.16);
+      --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box}body{margin:0;background:
+      radial-gradient(circle at 20% 0%,rgba(255,178,109,.28),transparent 34%),
+      radial-gradient(circle at 80% 10%,rgba(243,107,33,.16),transparent 30%),
+      var(--bg);color:var(--ink);font-family:var(--sans)}
+    a{color:inherit}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+    nav{position:sticky;top:0;z-index:10;background:rgba(255,248,241,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+    .navin{height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .logo{font-weight:900;letter-spacing:.08em;display:flex;align-items:center;gap:10px}
+    .mark{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 10px 24px rgba(243,107,33,.35)}
+    .navlinks{display:flex;gap:16px;font-size:13px;color:var(--muted);font-family:var(--mono)}
+    .btn{border:1px solid rgba(255,255,255,.55);background:linear-gradient(180deg,#ff863e,#eb5a12);color:#fff;
+      border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(243,107,33,.28)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}.btn.ghost{background:rgba(255,255,255,.64);color:var(--ink);border-color:var(--line);box-shadow:none}
+    .btn.dark{background:linear-gradient(180deg,#2a1c12,#140d08)}
+    header{padding:52px 0 24px}.eyebrow{font-family:var(--mono);font-size:12px;color:var(--brand);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    h1{font-size:clamp(38px,7vw,82px);line-height:.94;margin:14px 0 18px;letter-spacing:-.03em}
+    .lede{font-size:18px;line-height:1.65;color:var(--muted);max-width:820px}
+    .grid{display:grid;grid-template-columns:1.08fr .92fr;gap:20px;align-items:start;margin:24px 0 48px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+    .darkcard{background:linear-gradient(155deg,rgba(36,25,17,.96),rgba(17,11,7,.98));color:#f8efe6;border-color:rgba(255,151,80,.24)}
+    .sectiontitle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    h2{margin:0;font-size:22px}.badge{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted)}
+    .darkcard .badge{border-color:rgba(255,255,255,.16);color:#b99f88}
+    label{display:block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 7px}
+    select{width:100%;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.68);padding:12px;color:var(--ink);font-weight:800}
+    .row{display:flex;gap:10px;flex-wrap:wrap}.row .btn{flex:1}.status{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:12px;min-height:18px}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.stat{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);border-radius:12px;padding:14px}
+    .stat.light{background:rgba(255,255,255,.6);border-color:var(--line)}
+    .l{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.darkcard .l{color:#a88d77}
+    .v{font-size:22px;font-weight:900;margin-top:6px;word-break:break-word}.bigv{font-size:38px;color:var(--brand2)}
+    .realblock{margin-top:14px;border-top:1px dashed rgba(255,255,255,.14);padding-top:14px}
+    .kv{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px dashed rgba(255,255,255,.09);font-family:var(--mono);font-size:12px}
+    .kv span{color:#a88d77}.kv b{color:#fff;text-align:right;word-break:break-word}
+    .lightkv{border-bottom-color:var(--line)}.lightkv b{color:var(--ink)}.lightkv span{color:var(--muted)}
+    .warn{color:#ffd4ad;background:rgba(255,122,46,.12);border:1px solid rgba(255,151,80,.25);border-radius:10px;padding:11px;margin-top:12px;font-family:var(--mono);font-size:12px}
+    .ok{color:var(--green)}.bad{color:var(--red)}.muted{color:var(--muted)}
+    .feed{display:grid;gap:8px;margin-top:8px}.feedrow{border:1px solid var(--line);background:rgba(255,255,255,.58);border-radius:10px;padding:10px;font-family:var(--mono);font-size:12px}
+    footer{border-top:1px solid var(--line);padding:22px 0;color:var(--muted);font-family:var(--mono);font-size:12px}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.navlinks{display:none}.stats{grid-template-columns:1fr}.bigv{font-size:30px}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="wrap navin">
+    <div class="logo"><div class="mark"></div>SOLARA</div>
+    <div class="navlinks"><a href="#rewards">Rewards</a><a href="#network">Network</a><a href="#setup">Program</a></div>
+    <button class="btn dark" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Solana mainnet-beta · SOLR rewards</div>
+    <h1>GPU validation rewards, paid from the SOLR vault.</h1>
+    <p class="lede">Connect a wallet, choose a GPU tier, start validating, and claim SOLR rewards calculated from your on-chain validator account.</p>
+  </header>
+
+  <section class="grid" id="rewards">
+    <div class="card darkcard">
+      <div class="sectiontitle"><h2>REAL REWARDS</h2><span class="badge" id="txBadge">idle</span></div>
+      <label for="walletSelect">Wallet</label>
+      <select id="walletSelect"></select>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="connectWallet()">Connect selected wallet</button>
+        <button class="btn ghost" onclick="disconnectWallet()">Disconnect</button>
+      </div>
+      <label for="gpuSelect">GPU tier</label>
+      <select id="gpuSelect"></select>
+      <div class="status" id="walletStatus">Connect wallet to start validating</div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="startBtn" onclick="startValidating()">Start Validating</button>
+        <button class="btn" id="claimBtn" onclick="claimRewards()">Claim</button>
+      </div>
+      <div class="warn" id="vaultWarning" style="display:none">Reward vault not funded</div>
+
+      <div class="realblock">
+        <div class="stats">
+          <div class="stat"><div class="l">Claimable</div><div class="v bigv" id="claimable">0.000000</div></div>
+          <div class="stat"><div class="l">Claimed</div><div class="v" id="claimed">0.000000</div></div>
+          <div class="stat"><div class="l">Rate</div><div class="v" id="rate">0 SOLR/min</div></div>
+          <div class="stat"><div class="l">SOLR balance</div><div class="v" id="tokenBalance">0.000000</div></div>
+        </div>
+        <div class="kv"><span>Wallet</span><b id="walletAddr">-</b></div>
+        <div class="kv"><span>GPU tier</span><b id="gpuTier">-</b></div>
+        <div class="kv"><span>Status</span><b id="validatorStatus">inactive</b></div>
+        <div class="kv"><span>Start time</span><b id="startTime">-</b></div>
+        <div class="kv"><span>Last claim</span><b id="lastClaimTime">-</b></div>
+      </div>
+    </div>
+
+    <div class="card" id="network">
+      <div class="sectiontitle"><h2>NETWORK ACTIVITY</h2><span class="badge">mainnet accounts</span></div>
+      <div class="stats">
+        <div class="stat light"><div class="l">Active validators</div><div class="v" id="activeValidators">0</div></div>
+        <div class="stat light"><div class="l">Validators ever started</div><div class="v" id="validatorsEver">0</div></div>
+        <div class="stat light"><div class="l">Total network claimed</div><div class="v" id="networkClaimed">0.000000</div></div>
+        <div class="stat light"><div class="l">Reward vault balance</div><div class="v" id="vaultBalance">0.000000</div></div>
+      </div>
+      <div class="realblock" style="border-color:var(--line)">
+        <div class="kv lightkv"><span>SOLR mint</span><b id="mintAddr">-</b></div>
+        <div class="kv lightkv"><span>Program ID</span><b id="programId">-</b></div>
+        <div class="kv lightkv"><span>Network start</span><b id="networkStart">-</b></div>
+      </div>
+      <label>Recent activity feed</label>
+      <div class="feed" id="activityFeed"><div class="feedrow muted">No rewards claimed yet</div></div>
+    </div>
+  </section>
+
+  <section class="grid" id="setup">
+    <div class="card">
+      <div class="sectiontitle"><h2>Program State</h2><span class="badge">read-only</span></div>
+      <div class="kv lightkv"><span>Cluster</span><b id="cluster">mainnet-beta</b></div>
+      <div class="kv lightkv"><span>Config loaded</span><b id="configured">no</b></div>
+      <div class="kv lightkv"><span>Admin wallet</span><b id="adminWallet">-</b></div>
+    </div>
+    <div class="card">
+      <div class="sectiontitle"><h2>Empty States</h2><span class="badge">honest UI</span></div>
+      <p class="muted">No validators yet, no rewards claimed yet, and reward vault not funded are shown directly when mainnet accounts report those states.</p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">SOLARA · mainnet reward dashboard · no client-side reward authority</div></footer>
+<div class="status" id="toast" style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1a110b;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:50"></div>
+
+<script type="module">
+import { Connection, PublicKey, SystemProgram } from 'https://esm.sh/@solana/web3.js@1.95.8';
+import * as anchor from 'https://esm.sh/@coral-xyz/anchor@0.30.1';
+import { PhantomWalletAdapter, SolflareWalletAdapter, BackpackWalletAdapter } from 'https://esm.sh/@solana/wallet-adapter-wallets@0.19.37';
+import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from 'https://esm.sh/@solana/spl-token@0.4.8';
+window.SOLARA_DEPS={Connection,PublicKey,SystemProgram,anchor,PhantomWalletAdapter,SolflareWalletAdapter,BackpackWalletAdapter,TOKEN_PROGRAM_ID,ASSOCIATED_TOKEN_PROGRAM_ID,getAssociatedTokenAddressSync};
+</script>
+<script src="/runtime-config.js"></script>
+<script>
+const IDL={
+  version:'0.1.0',name:'solara_rewards',
+  instructions:[
+    {name:'startValidating',accounts:[{name:'config',isMut:true,isSigner:false},{name:'validator',isMut:true,isSigner:false},{name:'user',isMut:true,isSigner:true},{name:'systemProgram',isMut:false,isSigner:false}],args:[{name:'gpuTier',type:'u8'}]},
+    {name:'claim',accounts:[{name:'config',isMut:true,isSigner:false},{name:'validator',isMut:true,isSigner:false},{name:'user',isMut:true,isSigner:true},{name:'mint',isMut:false,isSigner:false},{name:'rewardVault',isMut:true,isSigner:false},{name:'userTokenAccount',isMut:true,isSigner:false},{name:'tokenProgram',isMut:false,isSigner:false},{name:'associatedTokenProgram',isMut:false,isSigner:false},{name:'systemProgram',isMut:false,isSigner:false}],args:[]}
+  ],
+  accounts:[
+    {name:'config',type:{kind:'struct',fields:[{name:'admin',type:'publicKey'},{name:'mint',type:'publicKey'},{name:'rewardVault',type:'publicKey'},{name:'paused',type:'bool'},{name:'tierRates',type:{array:['u64',3]}},{name:'activeValidators',type:'u64'},{name:'activeRewardRateUnitsPerMinute',type:'u64'},{name:'totalEarned',type:'u64'},{name:'totalClaims',type:'u64'},{name:'bump',type:'u8'}]}},
+    {name:'userValidator',type:{kind:'struct',fields:[{name:'user',type:'publicKey'},{name:'gpuTier',type:'u8'},{name:'active',type:'bool'},{name:'startedAt',type:'i64'},{name:'lastClaimAt',type:'i64'},{name:'rewardRateUnitsPerMinute',type:'u64'},{name:'totalClaimed',type:'u64'},{name:'bump',type:'u8'}]}}
+  ]
+};
+const $=id=>document.getElementById(id);
+function apiUrl(path){
+  const base = (window.SOLARA_API_BASE_URL || config.apiBaseUrl || '').replace(/\/$/,'');
+  return base ? base + path : path;
+}
+const TIER_KEY='solara_selected_gpu_tier';
+let config={solana:{cluster:'mainnet-beta',rpcUrl:'',programId:'',tokenMint:'',rewardVault:'',tokenDecimals:9},gpuTiers:[],networkStartAtIso:'2026-06-08T18:00:00.000Z'};
+let globalStats={activeValidators:0,validatorsEverStarted:0,totalClaimedTokens:0,rewardVaultBalanceTokens:0,rewardVaultNeedsFunding:true,recentActivity:[]};
+let walletAdapter=null,walletName=localStorage.getItem('solara_wallet')||'phantom',walletAddress='',client=null,validator=null,tokenBalance=0,txPending=false;
+const unitsToTokens=u=>Number(u||0)/Math.pow(10,config.solana.tokenDecimals||9);
+const tierById=id=>config.gpuTiers.find(t=>Number(t.id)===Number(id));
+const tierByName=name=>config.gpuTiers.find(t=>t.name===name);
+const fmt=n=>Number(n||0).toLocaleString(undefined,{minimumFractionDigits:6,maximumFractionDigits:6});
+const short=s=>s?s.slice(0,4)+'...'+s.slice(-4):'-';
+function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',3200)}
+function setTx(state){txPending=['connecting','starting','claiming'].includes(state);$('txBadge').textContent=state;$('startBtn').disabled=txPending||!walletAddress;$('claimBtn').disabled=txPending||!validator||!validator.active||claimableTokens()<0.000001}
+function adapterFor(name){const D=window.SOLARA_DEPS;if(name==='solflare')return new D.SolflareWalletAdapter();if(name==='backpack')return new D.BackpackWalletAdapter();return new D.PhantomWalletAdapter()}
+function initWallets(){
+  $('walletSelect').innerHTML='<option value="phantom">Phantom</option><option value="solflare">Solflare</option><option value="backpack">Backpack</option>';
+  $('walletSelect').value=walletName;
+  $('walletSelect').addEventListener('change',()=>{walletName=$('walletSelect').value;localStorage.setItem('solara_wallet',walletName);});
+}
+async function connectWallet(){
+  try{
+    setTx('connecting');
+    walletName=$('walletSelect').value;
+    localStorage.setItem('solara_wallet',walletName);
+    walletAdapter=adapterFor(walletName);
+    walletAdapter.on&&walletAdapter.on('disconnect',()=>disconnectWallet());
+    await walletAdapter.connect();
+    walletAddress=walletAdapter.publicKey.toBase58();
+    $('connectBtn').textContent=short(walletAddress);
+    await refreshUserState();
+    setTx('confirmed');
+  }catch(e){setTx('failed');toast(readableError(e));}
+}
+async function disconnectWallet(){
+  try{if(walletAdapter)await walletAdapter.disconnect();}catch(e){}
+  walletAdapter=null;walletAddress='';client=null;validator=null;tokenBalance=0;
+  $('connectBtn').textContent='Connect Wallet';
+  render();
+}
+async function solanaClient(){
+  if(client)return client;
+  if(!walletAdapter||!walletAdapter.publicKey)throw new Error('Connect wallet first');
+  if(config.solana.cluster!=='mainnet-beta')throw new Error('Mainnet configuration required');
+  if(!config.solana.rpcUrl||!config.solana.programId||!config.solana.tokenMint||!config.solana.rewardVault)throw new Error('SOLARA mainnet env is incomplete');
+  const D=window.SOLARA_DEPS;
+  const connection=new D.Connection(config.solana.rpcUrl,'confirmed');
+  const wallet={publicKey:walletAdapter.publicKey,signTransaction:walletAdapter.signTransaction.bind(walletAdapter),signAllTransactions:walletAdapter.signAllTransactions.bind(walletAdapter)};
+  const provider=new D.anchor.AnchorProvider(connection,wallet,{commitment:'confirmed'});
+  const programId=new D.PublicKey(config.solana.programId);
+  const program=new D.anchor.Program({...IDL,address:programId.toBase58()},provider);
+  const mint=new D.PublicKey(config.solana.tokenMint);
+  const rewardVault=new D.PublicKey(config.solana.rewardVault);
+  const configPda=D.PublicKey.findProgramAddressSync([new TextEncoder().encode('config')],programId)[0];
+  client={D,connection,programId,program,mint,rewardVault,configPda};
+  return client;
+}
+function normalizeAccount(a){
+  if(!a)return null;
+  const tier=Number(a.gpuTier||0),t=tierById(tier),num=x=>Number(x&&x.toString?x.toString():x||0);
+  return {wallet:walletAddress,tierId:tier,gpu:t?t.name:'tier '+tier,active:Boolean(a.active),startedAt:num(a.startedAt)*1000,lastClaimAt:num(a.lastClaimAt)*1000,rewardRateUnitsPerMinute:String(a.rewardRateUnitsPerMinute?.toString?.()||a.rewardRateUnitsPerMinute||'0'),totalClaimedUnits:String(a.totalClaimed?.toString?.()||a.totalClaimed||'0')};
+}
+async function refreshUserState(){
+  if(!walletAddress)return;
+  const c=await solanaClient();
+  const user=new c.D.PublicKey(walletAddress);
+  const validatorPda=c.D.PublicKey.findProgramAddressSync([new TextEncoder().encode('validator'),user.toBuffer()],c.programId)[0];
+  validator=normalizeAccount(await c.program.account.userValidator.fetchNullable(validatorPda));
+  if(validator){$('gpuSelect').value=validator.gpu;localStorage.setItem(TIER_KEY,validator.gpu);}
+  const ata=c.D.getAssociatedTokenAddressSync(c.mint,user);
+  try{const bal=await c.connection.getTokenAccountBalance(ata);tokenBalance=Number(bal.value.uiAmountString||0);}catch(_){tokenBalance=0;}
+  await refreshGlobalStats();
+  render();
+}
+function claimableTokens(){
+  if(!validator||!validator.active)return 0;
+  const elapsed=Math.max(0,(Date.now()-validator.lastClaimAt)/60000);
+  return elapsed*unitsToTokens(validator.rewardRateUnitsPerMinute);
+}
+async function startValidating(){
+  if(!walletAddress){toast('Connect wallet to start validating');return;}
+  const tier=tierByName($('gpuSelect').value);
+  if(!tier){toast('Choose a GPU tier');return;}
+  try{
+    setTx('starting');
+    const c=await solanaClient();
+    const user=new c.D.PublicKey(walletAddress);
+    const validatorPda=c.D.PublicKey.findProgramAddressSync([new TextEncoder().encode('validator'),user.toBuffer()],c.programId)[0];
+    await c.program.methods.startValidating(Number(tier.id)).accounts({config:c.configPda,validator:validatorPda,user,systemProgram:c.D.SystemProgram.programId}).rpc();
+    localStorage.setItem(TIER_KEY,tier.name);
+    await refreshUserState();
+    setTx('confirmed');
+  }catch(e){setTx('failed');toast(readableError(e));}
+}
+async function claimRewards(){
+  if(!validator){toast('Start validating first');return;}
+  if(globalStats.rewardVaultNeedsFunding){toast('Reward vault not funded');return;}
+  try{
+    setTx('claiming');
+    const c=await solanaClient();
+    const user=new c.D.PublicKey(walletAddress);
+    const validatorPda=c.D.PublicKey.findProgramAddressSync([new TextEncoder().encode('validator'),user.toBuffer()],c.programId)[0];
+    const userTokenAccount=c.D.getAssociatedTokenAddressSync(c.mint,user);
+    await c.program.methods.claim().accounts({config:c.configPda,validator:validatorPda,user,mint:c.mint,rewardVault:c.rewardVault,userTokenAccount,tokenProgram:c.D.TOKEN_PROGRAM_ID,associatedTokenProgram:c.D.ASSOCIATED_TOKEN_PROGRAM_ID,systemProgram:c.D.SystemProgram.programId}).rpc();
+    await refreshUserState();
+    setTx('confirmed');
+  }catch(e){setTx('failed');toast(readableError(e));}
+}
+function readableError(e){
+  const msg=String(e&&e.message||e||'Transaction failed');
+  if(/InsufficientVaultBalance|Reward vault balance is insufficient|insufficient.*vault|custom program error: 0x1777|6007/i.test(msg))return 'Reward vault needs funding';
+  if(/User rejected|rejected/i.test(msg))return 'Transaction rejected';
+  if(/mainnet|env|configuration|incomplete/i.test(msg))return msg;
+  return 'Transaction failed';
+}
+async function loadConfig(){
+  const r=await fetch(apiUrl('/api/config'));config=await r.json();
+  if(config.error)toast(config.error);
+  $('cluster').textContent=config.solana?.cluster||'mainnet-beta';
+  $('adminWallet').textContent=config.solana?.adminWalletPublicKey||'-';
+  $('programId').textContent=config.solana?.programId||'-';
+  $('mintAddr').textContent=config.solana?.tokenMint||'-';
+  $('networkStart').textContent=config.networkStartAtIso?new Date(config.networkStartAtIso).toLocaleString():'-';
+  $('gpuSelect').innerHTML=(config.gpuTiers||[]).map(t=>`<option value="${t.name}">${t.name} - ${t.tokensPerMinute} SOLR/min</option>`).join('');
+  const saved=localStorage.getItem(TIER_KEY);if(saved&&tierByName(saved))$('gpuSelect').value=saved;
+  $('gpuSelect').addEventListener('change',()=>localStorage.setItem(TIER_KEY,$('gpuSelect').value));
+}
+async function refreshGlobalStats(){
+  try{const r=await fetch(apiUrl('/api/stats/global'));globalStats=await r.json();}catch(e){globalStats={activeValidators:0,validatorsEverStarted:0,totalClaimedTokens:0,rewardVaultBalanceTokens:0,rewardVaultNeedsFunding:true,recentActivity:[]};}
+  render();
+}
+function render(){
+  const tier=validator?tierById(validator.tierId):tierByName($('gpuSelect').value);
+  $('configured').textContent=globalStats.configured?'yes':'no';
+  $('walletStatus').textContent=walletAddress?'Wallet connected':'Connect wallet to start validating';
+  $('walletAddr').textContent=walletAddress||'-';
+  $('gpuTier').textContent=validator?.gpu||$('gpuSelect').value||'-';
+  $('validatorStatus').textContent=validator?.active?'active':'inactive';
+  $('startTime').textContent=validator?.startedAt?new Date(validator.startedAt).toLocaleString():'-';
+  $('lastClaimTime').textContent=validator?.lastClaimAt?new Date(validator.lastClaimAt).toLocaleString():'-';
+  $('rate').textContent=(tier?Number(tier.tokensPerMinute):0)+' SOLR/min';
+  $('claimed').textContent=fmt(unitsToTokens(validator?.totalClaimedUnits||0));
+  $('claimable').textContent=fmt(claimableTokens());
+  $('tokenBalance').textContent=fmt(tokenBalance);
+  $('activeValidators').textContent=globalStats.activeValidators||0;
+  $('validatorsEver').textContent=globalStats.validatorsEverStarted||0;
+  $('networkClaimed').textContent=fmt(globalStats.totalClaimedTokens||0);
+  $('vaultBalance').textContent=fmt(globalStats.rewardVaultBalanceTokens||0);
+  $('vaultWarning').style.display=globalStats.rewardVaultNeedsFunding?'block':'none';
+  $('claimBtn').disabled=txPending||!validator||!validator.active||claimableTokens()<0.000001||globalStats.rewardVaultNeedsFunding;
+  $('startBtn').disabled=txPending||!walletAddress;
+  const rows=globalStats.recentActivity||[];
+  $('activityFeed').innerHTML=rows.length?rows.map(a=>`<div class="feedrow"><b>${short(a.wallet)}</b> claimed ${fmt(a.totalClaimedTokens)} SOLR<br><span class="muted">${a.lastClaimAt?new Date(Number(a.lastClaimAt)*1000).toLocaleString():'-'}</span></div>`).join(''):'<div class="feedrow muted">No rewards claimed yet</div>';
+}
+async function boot(){
+  initWallets();
+  await loadConfig();
+  await refreshGlobalStats();
+  setTx('idle');
+  setInterval(()=>render(),1000);
+  setInterval(refreshGlobalStats,30000);
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.mainnet]
+solara_rewards = "Fg6PaFpoGXkYsidMpWxTWqgYH52vYL6JCNTR6CqxwEkX"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "mainnet-beta"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test"

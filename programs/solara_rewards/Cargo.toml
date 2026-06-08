@@ -1,0 +1,19 @@
+[package]
+name = "solara_rewards"
+version = "0.1.0"
+description = "SOLARA GPU validation reward program"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "solara_rewards"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
+anchor-spl = "0.30.1"
