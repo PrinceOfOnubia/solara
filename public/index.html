@@ -384,6 +384,18 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
 .vbtn{width:100%;margin-top:4px}
 .vidle{font-size:12px;color:var(--faint);margin-top:12px;font-family:var(--mono)}
 .valstatus{background:linear-gradient(160deg,rgba(34,26,18,.92),rgba(20,15,10,.96));border:1px solid rgba(255,150,90,.2);color:#F3E9DF}
+.valpreview{min-height:100%;display:flex;flex-direction:column;gap:18px}
+.vpreview-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.valpreview .vlive{color:var(--brand-deep)}
+.valpreview .vsim{color:var(--brand-deep);border-color:var(--brand-tint);background:var(--brand-soft)}
+.vpreview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vpreview-grid div,.vpreview-foot div{background:rgba(255,255,255,.46);border:1px solid rgba(255,170,110,.22);border-radius:13px;padding:14px}
+.vpreview-grid span,.vpreview-foot span{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+.vpreview-grid b,.vpreview-foot b{display:block;margin-top:5px;font-family:var(--sans);font-size:18px;line-height:1.1;color:var(--ink)}
+.vpreview-rail{display:grid;gap:10px;margin:auto 0}
+.vpreview-rail div{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.vpreview-rail i{width:9px;height:9px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 5px var(--brand-soft)}
+.vpreview-foot{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .vstatustop{display:flex;justify-content:space-between;align-items:center}
 .vlive{font-family:var(--mono);font-size:11px;font-weight:700;color:#FFB888;display:inline-flex;gap:7px;align-items:center}
 .vlive .gdot{background:var(--brand);box-shadow:0 0 8px var(--brand)}
@@ -439,7 +451,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   <div class="logo"><div class="mark"></div><span>SOLARA</span><span class="byline">by Canas Lab</span></div>
   <nav class="navlinks">
     <a href="#render">Render</a><a href="#protocol">Protocol</a><a href="#trust">Trust</a>
-    <a href="#network">Network</a><a href="#earn">Providers</a><a href="#token">$SOLR</a>
+    <a href="#network">Network</a><a href="#validator">Providers</a><a href="#token">$SOLR</a>
   </nav>
   <div class="sp"></div>
   <a class="icbtn" id="xBtn" target="_blank" rel="noopener" title="X / Twitter" aria-label="X"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z"/></svg></a>
@@ -588,37 +600,9 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
     <div class="note"><b>honest limit</b> — this is an economic and statistical guarantee, not a cryptographic proof of computation. For subjective visual output it's a fair trade; for safety-critical compute it isn't the right tool, and SOLARA doesn't claim to be.</div>
   </section>
 
-  <!-- EARNINGS CALCULATOR -->
-  <section id="earn">
-    <div class="shead"><span class="eyebrow">For providers · ★ earnings tool</span>
-      <h2>Your idle GPU is a <span class="accent">render farm</span>.</h2>
-      <p>Most gaming GPUs sit dark 18+ hours a day. Project your real, net-of-electricity return — and see where your rig would land on the leaderboard. (This calculator goes beyond the basics: it nets out power and ranks you against the live fleet.)</p></div>
-    <div class="calc">
-      <div class="calc-in">
-        <div class="fld"><label>Your GPU</label><select id="c_gpu"></select></div>
-        <div class="fld"><label>Hours online / day <span id="c_hours_v">16h</span></label><input type="range" id="c_hours" min="1" max="24" value="16"></div>
-        <div class="fld"><label>Network demand <span id="c_util_v">30%</span></label><input type="range" id="c_util" min="5" max="95" value="30">
-          <div class="disc">Baseline mesh load. Faster, higher-reputation GPUs win more matches, so your effective utilization scales above this.</div></div>
-        <div class="fld"><label>Electricity price <span id="c_kwh_v">$0.15/kWh</span></label><input type="range" id="c_kwh" min="0" max="50" value="15"></div>
-      </div>
-      <div class="calc-out">
-        <div class="olbl">Estimated net profit / month</div>
-        <div class="bigout" id="c_month">$—<small> /mo</small></div>
-        <div style="margin-top:18px">
-          <div class="orow"><span>Gross revenue / day</span><b id="c_gross">$—</b></div>
-          <div class="orow"><span>Electricity / day</span><b class="neg" id="c_power">−$—</b></div>
-          <div class="orow"><span>Net profit / day</span><b class="pos" id="c_net">$—</b></div>
-          <div class="orow"><span>Throughput</span><b id="c_thr">— it/s · — jobs/day</b></div>
-          <div class="orow"><span>Required $SOLR bond</span><b id="c_bond">—</b></div>
-          <div class="orow"><span>Hardware payback</span><b id="c_payback">—</b></div>
-        </div>
-        <div class="rankchip"><div>Projected leaderboard rank<div style="font-size:12px;opacity:.85;font-weight:500" id="c_rankof">—</div></div><div class="big" id="c_rank">#—</div></div>
-        <div class="disc">Modeled on real consumer-GPU rental payouts (payout scales with card throughput; the scheduler favors faster, higher-reputation GPUs). Simulated estimate — not a guarantee of earnings.</div>
-      </div>
-    </div>
-
-    <!-- VALIDATOR -->
-    <div class="valwrap" id="validator">
+  <!-- VALIDATOR -->
+  <section id="validator">
+    <div class="valwrap">
       <span class="eyebrow">Become a validator · earn $SOLR</span>
       <h3 class="valh3">Put your GPU to work. Earn <span class="accent">$SOLR</span> every minute.</h3>
       <p class="valp">Pick a GPU plan, connect a wallet, and the SOLARA backend ledger starts accruing $SOLR from your validation session. Payouts are requested from the dashboard and approved by the admin payout wallet.</p>
@@ -633,6 +617,40 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
           <p class="flabel" style="margin-top:16px">3 · Go</p>
           <button class="btn vbtn" id="v_start" onclick="startValidating()">Start validating →</button>
           <div class="vidle" id="v_idle_note">Connect a wallet and pick a compatible GPU to start.</div>
+        </div>
+        <div class="valcard valpreview" id="v_preview">
+          <div class="vpreview-head">
+            <span class="vlive"><span class="gdot"></span>LEDGER READY</span>
+            <span class="vsim">real payouts</span>
+          </div>
+          <div class="vpreview-grid">
+            <div>
+              <span>Selected plan</span>
+              <b id="vp_plan">RTX 4090</b>
+            </div>
+            <div>
+              <span>Reward rate</span>
+              <b id="vp_rate">5 $SOLR/min</b>
+            </div>
+            <div>
+              <span>Minimum payout</span>
+              <b id="vp_min">—</b>
+            </div>
+            <div>
+              <span>Daily cap</span>
+              <b id="vp_cap">—</b>
+            </div>
+          </div>
+          <div class="vpreview-rail">
+            <div><i></i><span>Connect wallet</span></div>
+            <div><i></i><span>Start ledger session</span></div>
+            <div><i></i><span>Request payout</span></div>
+            <div><i></i><span>Admin approves batch</span></div>
+          </div>
+          <div class="vpreview-foot">
+            <div><span>Active validators</span><b id="vp_active">—</b></div>
+            <div><span>Total paid</span><b id="vp_paid">—</b></div>
+          </div>
         </div>
         <div class="valcard valstatus" id="v_status" style="display:none">
           <div class="vstatustop"><span class="vlive"><span class="gdot"></span>VALIDATING</span><span class="vsim">ledger</span></div>
@@ -1033,7 +1051,7 @@ function genArt(prompt,seed){const cv=$('rcanvas');const box=cv.parentElement.ge
   const vg=ctx.createRadialGradient(w/2,h/2,h*.2,w/2,h/2,h*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(20,10,4,.55)');ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
   cv.style.opacity=1;}
 
-/* protocol / token / roadmap / calculator */
+/* protocol / token / roadmap */
 function renderProtocol(){const s=[['01','Requester','Lock escrow','A job — prompt, model, sampler, seed — is submitted and payment is locked in a Solana escrow program. No accounts, no subscriptions.'],['02','Scheduler','Match a GPU','The scheduler routes by GPU model, VRAM, latency, price and reputation — to one provider, or several for premium jobs.'],['03','Provider','Render','The provider pulls a pinned container and content-addressed weights (Arweave/IPFS + CDN) and runs the diffusion inference.'],['04','Provider','Attest','The result is returned with an attestation: job id, parameter hash, model hash, a perceptual hash of the output, and a timestamp.'],['05','Verifier','Verify','A sampled fraction is re-run by an independent verifier and compared by perceptual closeness. Canary jobs catch fabrication.'],['06','Solana','Settle','On acceptance the escrow releases — ~90% to the provider, ~5% to verifiers, ~5% to the protocol. Paid straight to wallet.']];
   $('steps').innerHTML=s.map(x=>`<div class="step"><span class="role">${x[1]}</span><div class="n">${x[0]}</div><h4>${x[2]}</h4><p>${x[3]}</p></div>`).join('');}
 function fmtPrice(p){return p>=1?('$'+p.toFixed(4)):('$'+p.toPrecision(3))}
@@ -1075,20 +1093,7 @@ function renderToken(){
 function renderRoadmap(){const r=[{p:'Phase 0',t:'Test mesh',s:'shipped',pts:['Permissioned provider set','Baseline image generation','Escrow on Solana devnet']},{p:'Phase 1',t:'Mainnet-beta',s:'live',pts:['Open provider onboarding','Canary + sampled verification','USDC settlement, per-frame pricing']},{p:'Phase 2',t:'Scheduler decentralization',s:'next',pts:['Open verifier set','$SOLR governance','Video diffusion workflows']},{p:'Phase 3',t:'Maturity',s:'planned',pts:['Redundant premium execution','Expanded model catalog','SLA tiers']}];
   $('rmap').innerHTML=r.map(x=>`<div class="phase ${x.s==='live'?'live':''}"><span class="ts ${x.s}">${x.s}</span><div class="ph">${x.p}</div><h4>${x.t}</h4><ul>${x.pts.map(p=>`<li>${p}</li>`).join('')}</ul></div>`).join('');}
 
-const MEDIAN_PERF=17.5,PAYOUT_PER_PERF_HR=0.015,clampf=(v,a,b)=>Math.max(a,Math.min(b,v));
-function effUtil(perf,b){return clampf(b*clampf(perf/MEDIAN_PERF,0.4,1.8),0.02,0.95)}
-function grossDayFor(g,hours,b){const u=effUtil(g.perf,b),busy=hours*u,jobSec=clampf(420/g.perf,8,30);return{busy,jobs:busy*3600/jobSec,util:u,gross:busy*(g.perf*PAYOUT_PER_PERF_HR)}}
-function initCalc(){const sel=$('c_gpu');sel.innerHTML=GPUS.map(g=>`<option value="${g.name}">${g.name} · ${g.vram}GB</option>`).join('');sel.value='RTX 4090';['c_gpu','c_hours','c_util','c_kwh'].forEach(id=>$(id).addEventListener('input',calc));calc();}
-function calc(){const g=GPUS.find(x=>x.name===$('c_gpu').value);const hours=+$('c_hours').value,b=+$('c_util').value/100,kwh=+$('c_kwh').value/100;
-  $('c_hours_v').textContent=hours+'h';$('c_util_v').textContent=Math.round(b*100)+'%';$('c_kwh_v').textContent='$'+kwh.toFixed(2)+'/kWh';
-  const d=grossDayFor(g,hours,b);const power=(g.tdp/1000)*hours*d.util*kwh;const net=d.gross-power,month=net*30;const bond=Math.round(10000+g.perf*350);const payback=net>0?g.msrp/net:Infinity;
-  const proj=S.providers.map(p=>{const pg=GPUS.find(x=>x.name===p.gpu)||g;return grossDayFor(pg,hours,b).gross});let rank=1;proj.forEach(v=>{if(v>d.gross)rank++});
-  $('c_month').innerHTML=(month>=0?'$':'−$')+Math.abs(month).toFixed(0)+'<small> /mo</small>';
-  $('c_gross').textContent='$'+d.gross.toFixed(2);$('c_power').textContent='−$'+power.toFixed(2);
-  const ne=$('c_net');ne.textContent=(net>=0?'$':'−$')+Math.abs(net).toFixed(2);ne.className=net>=0?'pos':'neg';
-  $('c_thr').textContent=g.perf.toFixed(0)+' it/s · '+d.jobs.toFixed(0)+' jobs/day';$('c_bond').textContent=bond.toLocaleString()+' $SOLR';
-  $('c_payback').textContent=isFinite(payback)?Math.ceil(payback).toLocaleString()+' days ('+(payback/30).toFixed(1)+' mo)':'—';
-  $('c_rank').textContent='#'+rank;$('c_rankof').textContent='of '+(S.providers.length+1)+' GPUs incl. yours';}
+const clampf=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 /* ═══════ COBE GLOBE — Earth base + projected pyramid markers + traffic arcs ═══════ */
 const DEG=Math.PI/180;
@@ -1177,6 +1182,7 @@ let val=null;
 let vSelGpu=localStorage.getItem(SEL_GPU_KEY)||'RTX 4090';
 let vLastFetch=0;
 let vNetStats=null;
+let vPublicConfig=window.SOLARA_CONFIG||null;
 function apiBase(){return (window.SOLARA_API_BASE_URL||'').replace(/\/$/,'')}
 function gpuByName(n){return GPU_PLANS.find(g=>g.name===n)||GPUS.find(g=>g.name===n)}
 function vRate(g){return Number(g&&g.rate?g.rate:0)}
@@ -1205,13 +1211,25 @@ async function fetchRewards(){
   vTick();return d;
 }
 async function fetchGlobalStats(){try{vNetStats=await api('/api/stats/global');}catch(e){}}
-function vCompat(){const g=gpuByName(vSelGpu);const el=$('v_compat'),sp=$('v_specs');if(!g||!el)return;el.className='vcompat ok';el.innerHTML='<b></b>Eligible ledger payout plan';if(sp)sp.innerHTML=`<span>${g.vram} GB VRAM</span><span>~${vHash(g)} MH/s</span><span>${vRate(g)} $SOLR/min</span><span>${g.tdp}W</span>`;}
+async function fetchPublicConfig(){try{vPublicConfig=await api('/api/config');}catch(e){}}
+function updatePreview(){
+  const g=gpuByName(vSelGpu);
+  if($('vp_plan'))$('vp_plan').textContent=g?g.name:'—';
+  if($('vp_rate'))$('vp_rate').textContent=g?vRate(g)+' $SOLR/min':'—';
+  const cfg=vPublicConfig&&vPublicConfig.settings?vPublicConfig.settings:{};
+  if($('vp_min'))$('vp_min').textContent=cfg.minPayoutAmount?cfg.minPayoutAmount+' $SOLR':'—';
+  if($('vp_cap'))$('vp_cap').textContent=cfg.dailyRewardCap?cfg.dailyRewardCap+' $SOLR/day':'—';
+  if($('vp_active'))$('vp_active').textContent=vNetStats?fmt(vNetStats.activeValidators):'—';
+  if($('vp_paid'))$('vp_paid').textContent=vNetStats?Number(vNetStats.totalClaimedTokens||0).toFixed(2)+' $SOLR':'—';
+}
+async function refreshGlobalStats(){await fetchGlobalStats();updatePreview();}
+function vCompat(){const g=gpuByName(vSelGpu);const el=$('v_compat'),sp=$('v_specs');if(!g||!el)return;el.className='vcompat ok';el.innerHTML='<b></b>Eligible ledger payout plan';if(sp)sp.innerHTML=`<span>${g.vram} GB VRAM</span><span>~${vHash(g)} MH/s</span><span>${vRate(g)} $SOLR/min</span><span>${g.tdp}W</span>`;updatePreview();}
 function initValidator(){const sel=$('v_gpu');if(!sel)return;
   sel.innerHTML=GPU_PLANS.map(g=>`<option value="${esc(g.name)}">${esc(g.name)} · ${g.rate} SOLR/min</option>`).join('');
   sel.value=vSelGpu;
   sel.addEventListener('change',()=>{vSelGpu=sel.value;localStorage.setItem(SEL_GPU_KEY,vSelGpu);vCompat()});
-  vCompat();vWalletLabel();fetchGlobalStats();
-  setInterval(vTick,1000);setInterval(()=>{if(WALLET)fetchRewards().catch(()=>{});fetchGlobalStats();},15000);
+  vCompat();vWalletLabel();fetchPublicConfig().then(updatePreview);refreshGlobalStats();
+  setInterval(vTick,1000);setInterval(()=>{if(WALLET)fetchRewards().catch(()=>{});refreshGlobalStats();},15000);
 }
 async function startValidating(){
   const g=gpuByName(vSelGpu);
@@ -1224,12 +1242,13 @@ async function startValidating(){
 }
 function showValidating(){if(!val)return;const g=gpuByName(val.gpuTier||vSelGpu);if(!g)return;
   $('v_status').style.display='';$('v_idle_note').style.display='none';$('vdock').classList.add('show');
+  if($('v_preview'))$('v_preview').style.display='none';
   $('v_s_gpu').textContent=val.gpuTier||vSelGpu;$('v_s_hash').textContent='~'+vHash(g)+' MH/s';$('v_s_rate').textContent=(val.ratePerMinute||vRate(g))+' $SOLR/min';
   $('vd_gpu').textContent=val.gpuTier||vSelGpu;$('vd_hash').textContent='~'+vHash(g)+' MH/s';
   const sb=$('v_start');if(sb){sb.textContent='Open dashboard →';sb.setAttribute('onclick','openDash()');}
   vTick();
 }
-function resetValidatingUi(toast){$('v_status').style.display='none';$('v_idle_note').style.display='';$('vdock').classList.remove('show');const sb=$('v_start');if(sb){sb.textContent='Start validating →';sb.setAttribute('onclick','startValidating()');}if(toast)vToast('No active validation session.');}
+function resetValidatingUi(toast){$('v_status').style.display='none';if($('v_preview'))$('v_preview').style.display='flex';$('v_idle_note').style.display='';$('vdock').classList.remove('show');const sb=$('v_start');if(sb){sb.textContent='Start validating →';sb.setAttribute('onclick','startValidating()');}if(toast)vToast('No active validation session.');}
 function stopValidating(){resetValidatingUi(true);closeDash();}
 async function claimRewards(){
   if(!WALLET){vToast('Connect a wallet first.');return;}
@@ -1273,7 +1292,7 @@ function renderDash(){if(!val){$('vm_wallet').textContent=WALLET?'Wallet: '+WALL
 let _vtoastT;function vToast(msg){const t=$('vtoast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(_vtoastT);_vtoastT=setTimeout(()=>t.classList.remove('show'),2600);}
 function toggleDock(){const d=$('vdock');d.classList.toggle('min');$('vdockMin').textContent=d.classList.contains('min')?'+':'–';}
 
-buildConsoleChips();initCalc();initGlobe();checkRenderStatus();wireSocial();initValidator();
+buildConsoleChips();initGlobe();checkRenderStatus();wireSocial();initValidator();
 setInterval(()=>{tick(Date.now());S.lastTick=Date.now();renderStats();renderFeed();renderLB();},TICK_MS);
 setInterval(interp,50);
 setInterval(renderTerm,4200);
