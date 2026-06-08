@@ -15,6 +15,7 @@
     "update-rates": "tsx scripts/update-rates.ts",
     "pause": "tsx scripts/pause.ts",
     "resume": "tsx scripts/resume.ts",
+    "process-payouts": "tsx scripts/process-payouts.ts",
     "admin:create-mint": "tsx scripts/create-mint.ts",
     "admin:create-reward-vault": "tsx scripts/create-reward-vault.ts",
     "admin:initialize-config": "tsx scripts/initialize-config.ts",
@@ -23,6 +24,7 @@
     "admin:pause": "tsx scripts/pause.ts",
     "admin:resume": "tsx scripts/resume.ts",
     "admin:withdraw": "tsx scripts/admin-withdraw.ts",
+    "admin:process-payouts": "tsx scripts/process-payouts.ts",
     "verify:mainnet": "tsx scripts/verify-mainnet.ts",
     "deploy:mainnet:checklist": "cat MAINNET_LAUNCH_CHECKLIST.md"
   },
@@ -33,7 +35,9 @@
     "@coral-xyz/anchor": "^0.30.1",
     "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.8",
+    "better-sqlite3": "^11.9.1",
     "express": "^4.19.2",
+    "tweetnacl": "^1.0.3",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }

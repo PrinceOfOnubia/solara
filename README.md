@@ -1,318 +1,231 @@
-# SOLARA Mainnet Rewards
+# SOLARA MVP Ledger Payout Mode
 
-SOLARA is a mainnet-beta Solana dashboard for GPU validation rewards. Users
-connect a wallet, choose a GPU tier, start validating through the Anchor
-program, accrue SOLR from on-chain timestamps, and claim SOLR from the funded
-developer reward vault.
+SOLARA currently runs in MVP ledger payout mode. Users connect a Solana wallet,
+choose a GPU plan, start a backend validation session, accrue SOLR in the
+backend ledger, and request a payout. Admins approve requests and pay users from
+the reward wallet manually or with the optional batch processor.
 
-## Environment
-
-Copy `.env.example` to `.env` for local runs, or set the same values in your
-host:
-
-```bash
-SOLANA_CLUSTER=mainnet-beta
-SOLANA_RPC_URL=
-SOLARA_PROGRAM_ID=
-SOLR_MINT=
-SOLR_REWARD_VAULT=
-SOLR_DECIMALS=9
-ADMIN_WALLET_PUBLIC_KEY=
-NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
-```
-
-Admin wallet secrets stay local. The browser and web server only receive public
-addresses and RPC configuration.
+No Anchor deployment is required for the current MVP mode. The Anchor program in
+`programs/solara_rewards` is kept as optional future on-chain vault mode.
 
 ## Install And Run
 
 ```bash
-npm install
+npm install --legacy-peer-deps --no-audit --no-fund
 npm run build
 npm start
 ```
 
 Open `http://localhost:3000`.
 
-## Vercel Env Setup
+## MVP Ledger Payout Mode
 
-Use `.env.vercel.example` as the template for Vercel project variables.
+Flow:
 
-Required public/runtime values:
+1. User connects Phantom, Solflare, or Backpack.
+2. User selects a GPU plan:
+   - RTX 4090 = 5 SOLR/min
+   - A100 = 7 SOLR/min
+   - H100 = 10 SOLR/min
+3. User clicks `Start validating`.
+4. Backend creates a SQLite validation session.
+5. Backend accrues pending SOLR from elapsed time and the selected plan.
+6. User clicks `Request Payout`.
+7. Pending rewards are reserved in `payout_requests`.
+8. Admin approves or rejects the request in `/admin`.
+9. Admin processes a batch payout from the reward wallet SOLR ATA to user ATAs.
 
-```bash
-SOLANA_CLUSTER=mainnet-beta
-SOLANA_RPC_URL=<mainnet RPC URL>
-SOLARA_PROGRAM_ID=<program id>
-SOLR_MINT=<mint>
-SOLR_REWARD_VAULT=<vault>
-SOLR_DECIMALS=9
-ADMIN_WALLET_PUBLIC_KEY=<admin public key>
-NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
-API_BASE_URL=
+The frontend shows ledger values only for user rewards: pending rewards, paid
+rewards, active plan, and payout history all come from the backend ledger.
+
+## Database
+
+SQLite is used by default. Set `DATABASE_URL` to a file path or leave it empty
+to use `./data/solara-ledger.sqlite`.
+
+Tables:
+
+- `users`
+- `validation_sessions`
+- `reward_balances`
+- `payout_requests`
+- `payout_batches`
+- `reward_rates`
+
+## Backend API
+
+User endpoints:
+
+```text
+POST /api/validate/start
+GET  /api/user/:wallet/rewards
+POST /api/claim/request
 ```
 
-Set `API_BASE_URL` only if the frontend is served from Vercel while the backend
-API is served from Railway. Do not put private keys in Vercel.
+Admin endpoints:
+
+```text
+GET  /api/admin/summary
+GET  /api/admin/payouts?status=pending
+POST /api/admin/payouts/:id/approve
+POST /api/admin/payouts/:id/reject
+POST /api/admin/payouts/process-batch
+POST /api/admin/rates
+POST /api/admin/sessions/:wallet/stop
+```
+
+Admin endpoints accept either:
+
+- `Authorization: Bearer ADMIN_API_KEY` for local scripts and server-to-server
+  calls.
+- A browser wallet signed message from `ADMIN_WALLET_PUBLIC_KEY`.
+
+Never expose `ADMIN_API_KEY` to Vercel or browser JavaScript.
+
+## Vercel Env Setup
+
+Use `.env.vercel.example`:
+
+```bash
+API_BASE_URL=
+SOLANA_CLUSTER=mainnet-beta
+SOLANA_RPC_URL=
+SOLR_MINT=
+SOLR_DECIMALS=9
+ADMIN_WALLET_PUBLIC_KEY=
+```
+
+Vercel receives public runtime values only. Do not add private keys,
+`ADMIN_API_KEY`, or reward wallet secrets to Vercel.
 
 ## Railway Env Setup
 
-Use `.env.railway.example` as the template for Railway variables.
+Use `.env.railway.example`:
 
 ```bash
 NODE_ENV=production
 PORT=3000
 SOLANA_CLUSTER=mainnet-beta
-SOLANA_RPC_URL=<mainnet RPC URL>
-SOLARA_PROGRAM_ID=<program id>
-SOLR_MINT=<mint>
-SOLR_REWARD_VAULT=<vault>
+SOLANA_RPC_URL=
+SOLR_MINT=
 SOLR_DECIMALS=9
-ADMIN_WALLET_PUBLIC_KEY=<admin public key>
+ADMIN_WALLET_PUBLIC_KEY=
+ADMIN_API_KEY=
+DATABASE_URL=
+ENABLE_AUTO_PAYOUTS=false
+PAYOUT_INTERVAL_MINUTES=30
+REWARD_WALLET_SECRET_JSON=
 NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
-ALLOWED_ORIGINS=https://your-vercel-domain.vercel.app,https://www.solaraproject.live,https://solaraprojec.live
+ALLOWED_ORIGINS=https://your-vercel-domain.vercel.app,https://www.solaraproject.live
 ```
 
-Railway runs `npm start` and must not receive any admin private key.
+Railway runs:
+
+```bash
+npm start
+```
+
+`REWARD_WALLET_SECRET_JSON` is optional. If set, Railway can process approved
+payouts automatically or through the admin panel. Treat it as a hot wallet:
+fund it only with the amount needed for near-term rewards.
 
 ## Admin Local Env Setup
 
-Use `.env.admin.example` as the template for local-only deployment and vault
-operations:
+Use `.env.admin.example` for local payout operations:
 
 ```bash
 SOLANA_CLUSTER=mainnet-beta
-SOLANA_RPC_URL=<mainnet RPC URL>
-SOLARA_PROGRAM_ID=<program id>
-SOLR_MINT=<mint>
-SOLR_REWARD_VAULT=<vault>
+SOLANA_RPC_URL=
+SOLR_MINT=
 SOLR_DECIMALS=9
-ADMIN_WALLET_PUBLIC_KEY=<admin public key>
-ADMIN_KEYPAIR_PATH=/absolute/path/to/admin-keypair.json
-REWARD_VAULT_INITIAL_FUND_AMOUNT=1000
-WITHDRAW_DESTINATION_TOKEN_ACCOUNT=<admin SOLR token account>
+ADMIN_WALLET_PUBLIC_KEY=
+ADMIN_API_KEY=
+REWARD_WALLET_KEYPAIR_PATH=
+REWARD_WALLET_SECRET_JSON=
+DATABASE_URL=
+API_BASE_URL=http://localhost:3000
 ```
 
-The admin keypair is local only. Contract deployment and script-based admin
-operations must be done locally from the admin machine. Browser admin actions
-use `/admin` and are signed by the connected wallet extension.
-
-## Anchor Build
-
-```bash
-anchor build
-anchor keys sync
-```
-
-Deploy to mainnet-beta:
-
-```bash
-anchor deploy --provider.cluster mainnet-beta
-```
-
-Set the deployed program id:
-
-```bash
-SOLARA_PROGRAM_ID=<program id>
-```
-
-## MAINNET DEPLOYMENT
-
-## Before Going Live
-
-Do not publicly announce or link the site until all of these are true:
-
-- The Anchor program is deployed to mainnet-beta.
-- The reward vault is created and funded.
-- Program config is initialized with the production SOLR mint, reward vault,
-  and tier rates.
-- `npm run verify:mainnet` passes.
-- A real small-wallet `Start Validating` transaction succeeds.
-- A tiny `Claim` transaction succeeds and the vault/user balances move as
-  expected.
-
-1. Create the SOLR mint:
-
-```bash
-npm run admin:create-mint
-```
-
-Set `SOLR_MINT` to the printed mint address.
-
-2. Create the reward vault. The vault is the associated token account for the
-Config PDA and the SOLR mint:
-
-```bash
-npm run admin:create-reward-vault
-```
-
-Set `SOLR_REWARD_VAULT` to the printed vault address.
-
-3. Initialize config with rates:
-
-```bash
-npm run admin:initialize-config
-```
-
-Rates:
-
-- RTX 4090 = 5 SOLR/min
-- A100 = 7 SOLR/min
-- H100 = 10 SOLR/min
-
-4. Fund the reward vault:
-
-```bash
-npm run admin:fund-vault -- 1000
-```
-
-The script mints SOLR to the admin token account if needed, then transfers the
-requested amount into the reward vault.
-
-5. Set hosted environment values:
-
-```bash
-SOLANA_CLUSTER=mainnet-beta
-SOLANA_RPC_URL=<mainnet RPC URL>
-SOLARA_PROGRAM_ID=<program id>
-SOLR_MINT=<mint>
-SOLR_REWARD_VAULT=<vault>
-SOLR_DECIMALS=9
-ADMIN_WALLET_PUBLIC_KEY=<admin public key>
-NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
-```
-
-6. Verify dashboard:
-
-```bash
-curl -I https://<your-host>
-curl https://<your-host>/api/config
-curl https://<your-host>/api/stats/global
-```
-
-7. Start validating from a wallet:
-
-- Open the dashboard.
-- Connect Phantom, Solflare, or Backpack.
-- Choose a GPU tier.
-- Click `Start Validating`.
-- Confirm the mainnet transaction in the wallet.
-- Refresh and confirm the validator status still reads from chain.
-
-8. Claim a small amount:
-
-- Wait until claimable SOLR is greater than zero.
-- Click `Claim`.
-- Confirm the transaction.
-- Confirm total claimed and user SOLR balance update after confirmation.
-
-9. Monitor reward vault balance:
-
-```bash
-spl-token balance SOLR_MINT --owner SOLR_REWARD_VAULT --url <mainnet RPC URL>
-curl https://<your-host>/api/stats/global
-```
-
-If the vault is empty, claims fail on-chain and the UI displays
-`Reward vault not funded`.
-
-## Vault Funding
-
-Fund from the local admin machine:
-
-```bash
-npm run admin:fund-vault -- 1000
-```
-
-This mints to the admin token account if needed and transfers SOLR into the
-program-owned reward vault.
-
-## Admin Vault Withdrawal
-
-Withdraw unused SOLR from the reward vault to an admin SOLR token account:
-
-```bash
-npm run admin:withdraw -- 1000
-```
-
-Requirements:
-
-- Run locally only with `.env.admin`.
-- `ADMIN_KEYPAIR_PATH` must point to the config admin wallet keypair.
-- `WITHDRAW_DESTINATION_TOKEN_ACCOUNT` must be a SOLR token account.
-- Vercel and Railway must never receive `ADMIN_KEYPAIR_PATH`.
+`REWARD_WALLET_KEYPAIR_PATH` stays local. Do not commit it and do not upload it
+to Vercel.
 
 ## Admin Panel
 
 Open:
 
 ```text
-https://<your-domain>/admin
+/admin
 ```
 
-Connect the configured admin wallet. The page unlocks only when the connected
-wallet address equals `ADMIN_WALLET_PUBLIC_KEY`.
+Steps:
 
-Admin actions available from the browser:
+1. Connect the admin wallet.
+2. Sign the admin authorization message.
+3. Review summary cards and reward wallet balance.
+4. Approve or reject pending payout requests.
+5. Click `Process approved batch` to send SOLR to users.
+6. Update GPU reward rates when needed.
 
-- Fund vault: transfers SOLR from the admin wallet SOLR ATA to the
-  program-owned reward vault.
-- Pause rewards: calls `pause()`.
-- Resume rewards: calls `resume()`.
-- Update rates: calls `update_rates([rtx4090, a100, h100])`.
-- Withdraw vault funds: calls `admin_withdraw(amount)` to the admin wallet
-  SOLR ATA.
-- Refresh state: reloads config, vault balance, tier rates, and indexed global
-  stats.
+The browser admin panel never receives a private key. Admin authorization is a
+wallet signature verified by the backend.
 
-Security rules:
+## Payout Processing
 
-- Only the public admin wallet address goes in Vercel or Railway envs.
-- Never upload the admin private key to Vercel or Railway.
-- All `/admin` actions are signed from Phantom, Solflare, or Backpack.
-- The backend never signs admin transactions.
-- The reward vault remains owned by the Config PDA.
-
-## Final Go-Live Checklist
-
-Before launch:
-
-- `npm run deploy:mainnet:checklist`
-- `npm run verify:mainnet`
-- Start validation succeeds from a small non-admin wallet.
-- Claim succeeds for a tiny reward.
-- Reward vault balance decreases.
-- User SOLR associated token account balance increases.
-
-## Admin Commands
+Manual local batch:
 
 ```bash
-npm run admin:create-mint
-npm run admin:create-reward-vault
-npm run admin:initialize-config
-npm run admin:fund-vault -- 1000
-npm run admin:update-rates
-npm run admin:pause
-npm run admin:resume
-npm run admin:withdraw -- 1000
+npm run process-payouts
 ```
 
-## Dashboard Data
+The script requires:
 
-User values come from the connected wallet, the user SOLR token account, the
-Config PDA, and the UserValidator PDA derived from `[b"validator", wallet]`.
+- `ADMIN_API_KEY`
+- `API_BASE_URL`
+- `REWARD_WALLET_KEYPAIR_PATH` or `REWARD_WALLET_SECRET_JSON`
 
-Global values come from `/api/stats/global`, which connects to
-`SOLANA_RPC_URL`, fetches all UserValidator program accounts for
-`SOLARA_PROGRAM_ID`, decodes them, counts active validators, sums total claimed,
-and reads the reward vault token balance.
+Optional Railway automation:
 
-## Safety
+```bash
+ENABLE_AUTO_PAYOUTS=true
+PAYOUT_INTERVAL_MINUTES=30
+REWARD_WALLET_SECRET_JSON=[...]
+```
 
-- Claim uses checked math and fails when the vault balance is too low.
-- The reward vault authority is the Config PDA.
-- Only the admin can initialize config, pause, resume, or update rates.
-- Users cannot mint SOLR through the dashboard or program.
-- No admin private key is used by the frontend or hosted server.
+The batch processor pays approved requests only. It creates the user SOLR ATA if
+needed, transfers SOLR from the reward wallet ATA, stores the transaction
+signature, and marks failed payouts with an error.
+
+## Deployment Order
+
+1. Create or choose a reward wallet.
+2. Fund the reward wallet with SOL and SOLR.
+3. Set Railway envs.
+4. Deploy backend to Railway.
+5. Set Vercel envs, including `API_BASE_URL=<Railway backend URL>`.
+6. Deploy frontend to Vercel.
+7. Update Railway `ALLOWED_ORIGINS` with the Vercel and production domains.
+8. Verify `/api/config`.
+9. Verify `/api/stats/global`.
+10. Test `Start validating` with a small wallet.
+11. Wait briefly and test `Request Payout`.
+12. Connect `/admin`, approve the request, and process a tiny payout.
+13. Confirm reward wallet SOLR decreases.
+14. Confirm user SOLR ATA balance increases.
+
+## Future On-Chain Vault Mode
+
+The optional Anchor program supports a future direct-claim model where a program
+PDA owns the reward vault and users claim from on-chain validator accounts. That
+mode requires Anchor deploy/config/vault funding and is not required for this
+MVP ledger launch.
+
+## Verification
+
+```bash
+npm run build
+node --check server.js
+npx tsc --noEmit scripts/*.ts
+cargo test --manifest-path programs/solara_rewards/Cargo.toml
+```
 
 MIT.
