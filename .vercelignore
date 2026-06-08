@@ -1,0 +1,14 @@
+node_modules
+programs/*/target
+target
+.git
+.railway
+.vercel
+*.log
+.env
+.env.*
+!.env.example
+!.env.mainnet.example
+!.env.vercel.example
+!.env.railway.example
+!.env.admin.example
