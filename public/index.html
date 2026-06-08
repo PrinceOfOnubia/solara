@@ -638,6 +638,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
           <div class="vstatustop"><span class="vlive"><span class="gdot"></span>VALIDATING</span><span class="vsim">ledger</span></div>
           <div class="vbig" id="v_accrued">0.00 <small>$SOLR</small></div>
           <div class="vsub">pending ledger rewards · payout by admin approval</div>
+          <div class="vsub" id="v_safety">Minimum payout and cooldown load after wallet connect.</div>
           <div class="vrows">
             <div class="vrow"><span>GPU</span><b id="v_s_gpu">—</b></div>
             <div class="vrow"><span>Hashrate</span><b id="v_s_hash">—</b></div>
@@ -1185,7 +1186,7 @@ function vWalletLabel(){const b=$('v_wallet');if(!b)return;if(WALLET){b.textCont
 function localPending(){
   if(!val)return 0;
   const base=Number(val.pendingAmount||0);
-  if(!val.active||!val.lastAccruedAt)return base;
+  if(!val.active||!val.lastAccruedAt||val.capReached)return base;
   return base+Math.max(0,(Date.now()-Date.parse(val.lastAccruedAt))/60000)*Number(val.ratePerMinute||0);
 }
 function vUptime(){if(!val||!val.startedAt)return '0m';let s=(Date.now()-Date.parse(val.startedAt))/1000;const d=Math.floor(s/86400);s-=d*86400;const h=Math.floor(s/3600);s-=h*3600;const m=Math.floor(s/60);return (d?d+'d ':'')+(h?h+'h ':'')+m+'m'}
@@ -1234,15 +1235,27 @@ async function claimRewards(){
   if(!WALLET){vToast('Connect a wallet first.');return;}
   if(!val)await fetchRewards();
   const a=localPending();if(a<0.000001){vToast('No pending rewards to request.');return;}
-  const btn=$('v_claim');if(btn)btn.textContent='Requesting...';
+  const btns=[...document.querySelectorAll('[onclick="claimRewards()"]')];btns.forEach(b=>{b.disabled=true;b.dataset.oldText=b.textContent;b.textContent='Requesting...'});
   try{const d=await api('/api/claim/request',{method:'POST',body:JSON.stringify({wallet:WALLET})});val=d.rewards;vToast('Payout request created for '+Number(d.request.amount).toFixed(4)+' $SOLR');vTick();renderDash();}
   catch(e){vToast(e.message||'Payout request failed');}
-  finally{if(btn)btn.textContent='Request Payout';}
+  finally{btns.forEach(b=>{b.textContent=b.dataset.oldText||'Request Payout';delete b.dataset.oldText});vTick();}
 }
 function vTick(){if(!val)return;const a=localPending();
   if($('v_accrued'))$('v_accrued').innerHTML=a.toFixed(4)+' <small>$SOLR</small>';
   if($('v_s_up'))$('v_s_up').textContent=vUptime();
   if($('vd_accrued'))$('vd_accrued').textContent=a.toFixed(4)+' $SOLR';
+  const min=Number(val.minimumPayoutAmount||0),cd=Number(val.cooldownRemainingMinutes||0),daily=Number(val.dailyEarned||0),cap=Number(val.dailyCap||0);
+  const notes=[];
+  if(min)notes.push('Minimum payout '+min+' SOLR');
+  if(cd>0)notes.push('Cooldown '+cd+'m');
+  if(cap)notes.push('Daily '+daily.toFixed(2)+' / '+cap+' SOLR');
+  if(val.capReached)notes.push('Daily reward cap reached. Rewards resume later.');
+  if(val.paused)notes.push('Rewards paused');
+  if(val.payoutRequestsDisabled)notes.push('Payout requests paused');
+  if(val.blacklisted)notes.push('Wallet blacklisted');
+  if($('v_safety'))$('v_safety').textContent=notes.join(' · ')||'Ledger payout controls active.';
+  const can=a>=min&&cd===0&&!val.blacklisted&&!val.payoutRequestsDisabled;
+  document.querySelectorAll('[onclick="claimRewards()"]').forEach(b=>{b.disabled=!can});
   if($('vmodal')&&$('vmodal').classList.contains('show'))renderDash();
 }
 async function openDash(){if(WALLET)await fetchRewards().catch(e=>vToast(e.message));$('vmodal').classList.add('show');renderDash();}
@@ -1251,7 +1264,7 @@ function renderDash(){if(!val){$('vm_wallet').textContent=WALLET?'Wallet: '+WALL
   $('vm_wallet').textContent='Wallet: '+(val.wallet||WALLET||'—');
   $('vm_accrued').textContent=a.toFixed(4);$('vm_total').textContent=Number(val.paidAmount||0).toFixed(4)+' $SOLR';
   $('vm_hash').textContent=val.gpuTier||vSelGpu;$('vm_rate').textContent=(val.ratePerMinute||vRate(g))+'/min';$('vm_up').textContent=vUptime();
-  $('vm_day').textContent=fmt(Number(val.ratePerMinute||0)*60*24)+' $SOLR';
+  $('vm_day').textContent=(Number(val.dailyEarned||0)).toFixed(2)+' / '+(val.dailyCap||'—')+' $SOLR';
   $('vm_valc').textContent=vNetStats?fmt(vNetStats.activeValidators):'—';$('vm_dist').textContent=vNetStats?Number(vNetStats.totalClaimedTokens||0).toFixed(4)+' $SOLR':'—';
   $('vm_share').textContent='ledger';$('vm_nethash').textContent=vNetStats?fmt(vNetStats.validatorsEverStarted)+' sessions':'—';
   const log=val.payoutRequests||[];

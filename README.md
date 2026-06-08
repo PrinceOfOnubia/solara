@@ -28,7 +28,7 @@ Flow:
    - A100 = 7 SOLR/min
    - H100 = 10 SOLR/min
 3. User clicks `Start validating`.
-4. Backend creates a SQLite validation session.
+4. Backend creates a ledger validation session.
 5. Backend accrues pending SOLR from elapsed time and the selected plan.
 6. User clicks `Request Payout`.
 7. Pending rewards are reserved in `payout_requests`.
@@ -40,8 +40,12 @@ rewards, active plan, and payout history all come from the backend ledger.
 
 ## Database
 
-SQLite is used by default. Set `DATABASE_URL` to a file path or leave it empty
-to use `./data/solara-ledger.sqlite`.
+Railway Postgres is required for real users. SQLite is local development only.
+The server refuses to start in production unless `DATABASE_URL` is a PostgreSQL
+URL.
+
+Local development can leave `DATABASE_URL` empty to use
+`./data/solara-ledger.sqlite`.
 
 Tables:
 
@@ -51,6 +55,10 @@ Tables:
 - `payout_requests`
 - `payout_batches`
 - `reward_rates`
+- `admin_audit_logs`
+- `wallet_blacklist`
+- `system_settings`
+- `reward_accrual_events`
 
 ## Backend API
 
@@ -72,15 +80,19 @@ POST /api/admin/payouts/:id/reject
 POST /api/admin/payouts/process-batch
 POST /api/admin/rates
 POST /api/admin/sessions/:wallet/stop
+POST /api/admin/pause
+POST /api/admin/resume
+GET  /api/admin/settings
+POST /api/admin/settings
+GET  /api/admin/blacklist
+POST /api/admin/blacklist
+POST /api/admin/unblacklist
+GET  /api/admin/audit-logs
 ```
 
-Admin endpoints accept either:
-
-- `Authorization: Bearer ADMIN_API_KEY` for local scripts and server-to-server
-  calls.
-- A browser wallet signed message from `ADMIN_WALLET_PUBLIC_KEY`.
-
-Never expose `ADMIN_API_KEY` to Vercel or browser JavaScript.
+Admin browser endpoints require a wallet-signed message from
+`ADMIN_WALLET_PUBLIC_KEY`, including a timestamp and nonce. Never expose
+`ADMIN_API_KEY` to Vercel or browser JavaScript.
 
 ## Vercel Env Setup
 
@@ -105,15 +117,19 @@ Use `.env.railway.example`:
 ```bash
 NODE_ENV=production
 PORT=3000
+DATABASE_URL=
 SOLANA_CLUSTER=mainnet-beta
 SOLANA_RPC_URL=
 SOLR_MINT=
 SOLR_DECIMALS=9
 ADMIN_WALLET_PUBLIC_KEY=
 ADMIN_API_KEY=
-DATABASE_URL=
 ENABLE_AUTO_PAYOUTS=false
 PAYOUT_INTERVAL_MINUTES=30
+MIN_PAYOUT_AMOUNT=100
+CLAIM_COOLDOWN_MINUTES=30
+DAILY_REWARD_CAP=500
+MAX_ACTIVE_SESSION_HOURS=24
 REWARD_WALLET_SECRET_JSON=
 NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
 ALLOWED_ORIGINS=https://your-vercel-domain.vercel.app,https://www.solaraproject.live
@@ -125,9 +141,17 @@ Railway runs:
 npm start
 ```
 
+Add Railway Postgres before real users. See
+[docs/postgres-migration.md](docs/postgres-migration.md). Do not launch with
+SQLite in production.
+
 `REWARD_WALLET_SECRET_JSON` is optional. If set, Railway can process approved
 payouts automatically or through the admin panel. Treat it as a hot wallet:
 fund it only with the amount needed for near-term rewards.
+
+Start with `ENABLE_AUTO_PAYOUTS=false` and use manual approval first. Fund the
+reward wallet with a small launch amount, monitor payout volume, then increase
+funding gradually.
 
 ## Admin Local Env Setup
 
@@ -140,14 +164,15 @@ SOLR_MINT=
 SOLR_DECIMALS=9
 ADMIN_WALLET_PUBLIC_KEY=
 ADMIN_API_KEY=
+ADMIN_KEYPAIR_PATH=
 REWARD_WALLET_KEYPAIR_PATH=
 REWARD_WALLET_SECRET_JSON=
 DATABASE_URL=
 API_BASE_URL=http://localhost:3000
 ```
 
-`REWARD_WALLET_KEYPAIR_PATH` stays local. Do not commit it and do not upload it
-to Vercel.
+`ADMIN_KEYPAIR_PATH` and `REWARD_WALLET_KEYPAIR_PATH` stay local. Do not commit
+them and do not upload them to Vercel or Railway.
 
 ## Admin Panel
 
@@ -165,9 +190,21 @@ Steps:
 4. Approve or reject pending payout requests.
 5. Click `Process approved batch` to send SOLR to users.
 6. Update GPU reward rates when needed.
+7. Pause/resume rewards during incidents.
+8. Update safety settings.
+9. Blacklist suspicious wallets.
+10. Review audit logs.
 
 The browser admin panel never receives a private key. Admin authorization is a
 wallet signature verified by the backend.
+
+Emergency controls:
+
+- Pause blocks new validation sessions.
+- Blacklist blocks a wallet from starting sessions or requesting payouts.
+- Rejecting a payout returns the reserved amount to the user's pending balance.
+- Audit logs record pause, resume, rate updates, payout approval/rejection,
+  batch processing, blacklist changes, and safety setting updates.
 
 ## Payout Processing
 
@@ -179,9 +216,13 @@ npm run process-payouts
 
 The script requires:
 
-- `ADMIN_API_KEY`
+- `ADMIN_KEYPAIR_PATH` for signing the admin request locally
 - `API_BASE_URL`
 - `REWARD_WALLET_KEYPAIR_PATH` or `REWARD_WALLET_SECRET_JSON`
+
+`ADMIN_API_KEY` is kept as a backend-only operations secret, but browser admin
+actions and the local batch script use wallet-signed admin authentication. Do not
+upload the admin keypair to Vercel or Railway.
 
 Optional Railway automation:
 
