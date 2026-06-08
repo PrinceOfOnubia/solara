@@ -1,2 +1,5 @@
+[variables]
+NIXPACKS_NODE_VERSION = "20"
+
 [phases.install]
 cmds = ["npm ci --legacy-peer-deps --no-audit --no-fund"]

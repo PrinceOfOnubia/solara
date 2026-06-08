@@ -7,3 +7,4 @@ node_modules/
 target/
 programs/*/target/
 .vercel
+public/runtime-config.js
