@@ -368,7 +368,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
 .btn{flex:none;white-space:nowrap}
 @media(max-width:1180px){.navlinks{display:none}}
 
-/* ── Validator simulator (preview / simulated rewards) ── */
+/* ── Validator ledger panel ── */
 .valwrap{margin-top:22px;border:1px solid var(--brand-tint);border-radius:22px;padding:26px;background:linear-gradient(160deg,rgba(255,247,240,.72),rgba(255,255,255,.5));backdrop-filter:var(--gb);-webkit-backdrop-filter:var(--gb);box-shadow:var(--gsh);position:relative;overflow:hidden}
 .valwrap::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;background:linear-gradient(180deg,rgba(255,255,255,.45),transparent);pointer-events:none}
 .valh3{font-size:clamp(22px,3vw,30px);margin:10px 0 8px;position:relative}
@@ -444,7 +444,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   <div class="sp"></div>
   <a class="icbtn" id="xBtn" target="_blank" rel="noopener" title="X / Twitter" aria-label="X"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z"/></svg></a>
   <a class="icbtn" id="ghBtn" href="https://github.com/jolliesol/canas-core" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.8-.01 3.18 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg></a>
-  <span class="onlinepill"><span class="gdot"></span><span id="navOnline">— GPUs online</span></span>
+  <span class="onlinepill"><span class="gdot"></span><span id="navOnline">ledger mode</span></span>
   <button class="btn" onclick="go('#render')">Render</button>
   <button class="btn dark" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
 </div></header>
@@ -453,7 +453,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   <!-- HERO -->
   <section class="hero" style="padding-top:64px">
     <div>
-      <span class="eyebrow">Live on Solana · preview / simulated mesh · <span id="heroGpus">—</span> GPUs rendering now</span>
+      <span class="eyebrow">Live on Solana · MVP ledger payout mode · <span id="heroGpus">backend ledger</span></span>
       <h1>The distributed <span class="accent">canvas</span> of GPU compute.</h1>
       <p class="lede">SOLARA weaves idle consumer GPUs into one mesh that renders generative diffusion — images & video — and settles it per frame on-chain. Requesters pay only for what they generate. Providers earn from silicon that would otherwise sit dark.</p>
       <div class="cta">
@@ -471,7 +471,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
         <span class="liveb"><span class="gdot"></span>LIVE</span></div>
       <div class="gpuart"><div class="glyph">SOL<span class="chip">GPU</span>RA</div></div>
       <div class="gpustats">
-        <div class="gpustat"><div class="l">GPUs online</div><div class="v" id="hcGpus">—</div></div>
+        <div class="gpustat"><div class="l">GPU plans</div><div class="v" id="hcGpus">—</div></div>
         <div class="gpustat"><div class="l">Regions</div><div class="v" id="hcReg">—</div></div>
         <div class="gpustat"><div class="l">Avg / image</div><div class="v" id="hcAvg">—</div></div>
       </div>
@@ -482,17 +482,17 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   </section>
 
   <div class="strip">
-    <div class="tile"><div class="l">Frames rendered</div><div class="v tnum" id="t_frames">—</div><div class="s" id="t_frames_s">— GPU-seconds</div></div>
-    <div class="tile"><div class="l">USDC settled</div><div class="v tnum" id="t_usdc">—</div><div class="s" id="t_usdc_s">99.9% success</div></div>
-    <div class="tile"><div class="l">Jobs completed</div><div class="v tnum" id="t_jobs">—</div><div class="s">across the mesh</div></div>
-    <div class="tile"><div class="l">Network compute</div><div class="v tnum" id="t_flops">—<small> PFLOPS</small></div><div class="s">FP16 · live fleet</div></div>
+    <div class="tile"><div class="l">Render backend</div><div class="v tnum" id="t_frames">—</div><div class="s" id="t_frames_s">pending</div></div>
+    <div class="tile"><div class="l">Settlement backend</div><div class="v tnum" id="t_usdc">—</div><div class="s" id="t_usdc_s">pending</div></div>
+    <div class="tile"><div class="l">Ledger sessions</div><div class="v tnum" id="t_jobs">—</div><div class="s">from backend</div></div>
+    <div class="tile"><div class="l">Reward ledger</div><div class="v tnum" id="t_flops">—</div><div class="s">MVP payout mode</div></div>
   </div>
 
   <!-- RENDER CONSOLE -->
   <section id="render">
     <div class="shead"><span class="eyebrow">Try it · live</span>
       <h2>Submit a job. Watch the mesh <span class="accent">render it</span>.</h2>
-      <p>Your prompt is priced in USDC, escrowed, routed to a provider in the live mesh, and rendered. It shows up in the public job stream below. When the render backend is connected it generates a <b>real image</b> (Gemini 2.5 Flash Image); otherwise it shows a simulated preview.</p></div>
+      <p>Your prompt is priced in USDC, escrowed, routed to a provider, and rendered. When the render backend is connected it generates a <b>real image</b>; otherwise this console remains a local visual preview and is not reward data.</p></div>
     <div class="console">
       <div class="card panel">
         <p class="flabel">Prompt</p>
@@ -514,7 +514,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
       </div>
       <div class="card outpanel">
         <div class="outhead"><span class="gdot" style="background:var(--brand)"></span>Render output<span id="renderModeBadge" style="display:none;margin-left:auto;font-size:10px;color:var(--brand-deep);background:var(--brand-soft);border:1px solid var(--brand-tint);padding:3px 9px;border-radius:999px">live</span></div>
-        <div class="outstage"><canvas id="rcanvas"></canvas><span class="simtag" id="simtag">simulated preview</span>
+        <div class="outstage"><canvas id="rcanvas"></canvas><span class="simtag" id="simtag">local preview</span>
           <span id="outIdle">awaiting prompt<br><span style="color:#5f4f40">output renders here</span></span></div>
         <div class="stages" id="stages">
           <div class="stg" data-s="escrow"><i></i>Escrow</div><div class="stg" data-s="matched"><i></i>Matched</div>
@@ -546,10 +546,10 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
       <h2>The network, <span class="accent">rendering right now</span>.</h2>
       <p>Every row is a diffusion job moving through escrow, scheduling, render and settlement — streamed straight from the mesh.</p></div>
     <div class="strip" style="margin-top:0;margin-bottom:22px">
-      <div class="tile"><div class="l">GPUs online</div><div class="v tnum" id="n_gpus">—</div><div class="s" id="n_gpus_s">— registered</div></div>
+      <div class="tile"><div class="l">GPU plans</div><div class="v tnum" id="n_gpus">—</div><div class="s" id="n_gpus_s">ledger mode</div></div>
       <div class="tile"><div class="l">Active renders</div><div class="v tnum" id="n_active">—</div><div class="s" id="n_active_s">— queued</div></div>
-      <div class="tile"><div class="l">Frames rendered</div><div class="v tnum" id="n_frames">—</div><div class="s" id="n_frames_s">— GPU-seconds</div></div>
-      <div class="tile"><div class="l">USDC settled</div><div class="v tnum" id="n_usdc">—</div><div class="s" id="n_usdc_s">— success</div></div>
+      <div class="tile"><div class="l">Render backend</div><div class="v tnum" id="n_frames">—</div><div class="s" id="n_frames_s">pending</div></div>
+      <div class="tile"><div class="l">Settlement backend</div><div class="v tnum" id="n_usdc">—</div><div class="s" id="n_usdc_s">pending</div></div>
     </div>
     <div class="netgrid">
       <div class="card"><div class="card-h"><h3>Live job stream</h3><span class="meta" id="feedMeta">— active</span></div>
@@ -557,7 +557,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
       <div class="rcol">
         <div class="card globecard"><div class="card-h"><h3>Provider map</h3><span class="meta" id="globeMeta">— regions</span></div>
           <div class="globewrap"><canvas id="globe"></canvas></div>
-          <div class="globefoot"><span class="leg"><b></b>online provider</span><span id="globeAgg">— PFLOPS aggregate</span></div></div>
+          <div class="globefoot"><span class="leg"><b></b>deployment region</span><span id="globeAgg">ledger backend online</span></div></div>
         <div class="card"><div class="card-h"><h3>Top providers</h3><span class="meta">by earnings</span></div>
           <div id="leaderboard" style="padding:4px 0"></div></div>
       </div>
@@ -688,7 +688,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   <!-- CTA -->
   <section style="padding-top:20px">
     <div class="ctablock">
-      <span class="eyebrow" id="ctaEyebrow">— GPUs online · join the mesh</span>
+      <span class="eyebrow" id="ctaEyebrow">MVP ledger payout mode · join the validator ledger</span>
       <h2>Paint with the world's <span class="accent">idle GPUs</span>.</h2>
       <p>Render diffusion for a fraction of cloud prices, or turn your gaming rig into a cash-flowing render node. Two sides, one canvas.</p>
       <div class="cta"><button class="btn" onclick="go('#render')">Rent GPUs →</button><button class="btn ghost" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.3)" onclick="go('#validator')">Become a provider</button></div>
@@ -918,10 +918,7 @@ const money=n=>'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':
 const ago=t=>{const s=(Date.now()-t)/1000;return s<3?'just now':s<60?Math.floor(s)+'s ago':s<3600?Math.floor(s/60)+'m ago':Math.floor(s/3600)+'h ago'};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-// ── Live mesh counters ──────────────────────────────────────────────
-// Pure function of real elapsed time since LAUNCH → identical for every visitor,
-// never resets on reload, and stays flat at the base until launch, then grows
-// ~10–50 / minute. Launch = 21:00 Moscow time (MSK = UTC+3).
+// ── Public status counters ──────────────────────────────────────────
 const LAUNCH = Date.parse('2026-06-09T21:00:00+03:00');   // ← 21:00 МСК launch moment
 const _CNT = { frames:{base:150,per:30,s:1.7}, gpuSec:{base:150,per:30,s:3.1}, jobs:{base:150,per:30,s:4.6}, usdc:{base:100,per:2.0,s:6.2} };
 function _val(k){
@@ -933,27 +930,26 @@ function _val(k){
 }
 let disp={jobs:0,frames:0,usdc:0,gpuSec:0};
 function _syncDisp(){ disp.frames=_val('frames'); disp.gpuSec=_val('gpuSec'); disp.jobs=_val('jobs'); disp.usdc=_val('usdc'); }
-function renderStats(){const st=stats();_syncDisp();
-  $('navOnline').textContent=st.online+' GPUs online';$('heroGpus').textContent=st.online;
-  $('hcGpus').textContent=st.online;$('hcReg').textContent=st.regions;$('hcAvg').textContent='$'+st.avgCost.toFixed(4);
-  $('ctaEyebrow').textContent=st.online+' GPUs online · join the mesh';
-  $('t_frames').textContent=fmt(disp.frames);$('t_frames_s').textContent=fmt(disp.gpuSec)+' GPU-seconds';
-  $('t_usdc').textContent=money(disp.usdc);$('t_usdc_s').textContent=st.success.toFixed(2)+'% success';
-  $('t_jobs').textContent=fmt(disp.jobs);$('t_flops').innerHTML=st.pflops.toFixed(2)+'<small> PFLOPS</small>';
-  // network section
-  $('n_gpus').textContent=st.online;$('n_gpus_s').textContent=st.total+' registered';
-  $('n_active').textContent=st.active;$('n_active_s').textContent=st.queued+' queued';
-  $('n_frames').textContent=fmt(disp.frames);$('n_frames_s').textContent=fmt(disp.gpuSec)+' GPU-seconds';
-  $('n_usdc').textContent=money(disp.usdc);$('n_usdc_s').textContent=st.success.toFixed(1)+'% success';
-  $('feedMeta').textContent=st.active+' active';
-  $('globeMeta').textContent=st.regions+' regions';$('globeAgg').textContent=st.pflops.toFixed(1)+' PFLOPS aggregate';
+function renderStats(){const st=stats();
+  $('navOnline').textContent='ledger mode';$('heroGpus').textContent='backend ledger';
+  $('hcGpus').textContent='3';$('hcReg').textContent='mainnet';$('hcAvg').textContent='ledger';
+  $('ctaEyebrow').textContent='MVP ledger payout mode · join the validator ledger';
+  $('t_frames').textContent='—';$('t_frames_s').textContent='render backend pending';
+  $('t_usdc').textContent='—';$('t_usdc_s').textContent='settlement backend pending';
+  $('t_jobs').textContent='—';$('t_flops').textContent='ledger';
+  // network section: no synthetic network counters are shown in MVP ledger mode.
+  $('n_gpus').textContent='—';$('n_gpus_s').textContent='ledger mode';
+  $('n_active').textContent='—';$('n_active_s').textContent='backend indexed';
+  $('n_frames').textContent='—';$('n_frames_s').textContent='render backend pending';
+  $('n_usdc').textContent='—';$('n_usdc_s').textContent='settlement backend pending';
+  $('feedMeta').textContent='local preview';
+  $('globeMeta').textContent='deployment map';$('globeAgg').textContent='ledger backend online';
   // trust
-  $('tr_canary').textContent=fmt(st.canary);$('tr_disp').textContent=fmt(st.disputes);$('tr_slash').textContent=st.slashes;$('tr_pass').textContent=st.success.toFixed(2)+'%';
+  $('tr_canary').textContent='—';$('tr_disp').textContent='—';$('tr_slash').textContent='—';$('tr_pass').textContent='—';
 }
 function interp(){
-  _syncDisp();
-  $('t_jobs').textContent=fmt(disp.jobs);$('t_frames').textContent=fmt(disp.frames);$('t_usdc').textContent=money(disp.usdc);
-  $('n_frames').textContent=fmt(disp.frames);$('n_usdc').textContent=money(disp.usdc);}
+  $('t_jobs').textContent='—';$('t_frames').textContent='—';$('t_usdc').textContent='—';
+  $('n_frames').textContent='—';$('n_usdc').textContent='—';}
 
 function renderFeed(){const jobs=S.jobs.slice(0,38);
   $('feed').innerHTML=jobs.map(j=>{const showBar=j.status==='rendering'||j.status==='queued';const pct=j.status==='rendering'?j.progress:0;
@@ -1006,13 +1002,13 @@ function runRender(){
 }
 function simRender(job){const dur=2200,t0=performance.now();
   (function step(t){const p=Math.min(100,(t-t0)/dur*100);job.progress=p;$('o_status').textContent='rendering… '+Math.floor(p)+'%';
-    if(p<100)requestAnimationFrame(step);else{genArt(job.prompt,rcSeed);$('simtag').textContent='simulated preview';$('simtag').style.opacity=1;settleConsole(job,'sim');}})(t0);}
+    if(p<100)requestAnimationFrame(step);else{genArt(job.prompt,rcSeed);$('simtag').textContent='local preview';$('simtag').style.opacity=1;settleConsole(job,'sim');}})(t0);}
 function liveRender(job,prompt){let p=0,waiting=true;
   (function creep(){if(!waiting)return;p=Math.min(93,p+(93-p)*0.05+0.5);job.progress=p;$('o_status').textContent='rendering… '+Math.floor(p)+'%';requestAnimationFrame(creep);})();
   fetch('/api/render',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})})
     .then(async r=>{if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||('http '+r.status))}return r.json()})
     .then(d=>{waiting=false;job.progress=100;if(d&&d.image){showRealImage(d.image,()=>{$('simtag').textContent=rcModel;$('simtag').style.opacity=1;settleConsole(job,'live');});}else throw new Error('no image');})
-    .catch(()=>{waiting=false;job.progress=100;genArt(job.prompt,rcSeed);$('simtag').textContent='simulated preview · live unavailable';$('simtag').style.opacity=1;settleConsole(job,'sim');});}
+    .catch(()=>{waiting=false;job.progress=100;genArt(job.prompt,rcSeed);$('simtag').textContent='local preview · render backend unavailable';$('simtag').style.opacity=1;settleConsole(job,'sim');});}
 function settleConsole(job,kind){job.status='settled';job.settledAt=Date.now();job.pHash='p:'+hx(S.rng,16);
   const p=S.providers.find(x=>x.id===job._pid);if(p){p.jobsDone++;p.framesRendered++;p.gpuSeconds+=job.gpuSeconds;p.earnedUsdc+=job.costUsdc*PROVIDER_SHARE}
   S.totals.jobs++;S.totals.frames++;S.totals.gpuSec+=job.gpuSeconds;S.totals.usdc+=job.costUsdc;
@@ -1139,7 +1135,7 @@ async function initGlobe(){
       const ctx=mx+vx/vd*lift,cty=my+vy/vd*lift;
       d+=`M${A.x.toFixed(1)},${A.y.toFixed(1)} Q${ctx.toFixed(1)},${cty.toFixed(1)} ${B.x.toFixed(1)},${B.y.toFixed(1)} `;
       const ax=0.25*A.x+0.5*ctx+0.25*B.x,ay=0.25*A.y+0.5*cty+0.25*B.y;const t=trafficEls[i];
-      t.style.transform=`translate(${ax}px,${ay}px) translate(-50%,-50%)`;t.style.opacity=1;t.textContent=gTraffic[i]+'k req/s';});
+      t.style.transform=`translate(${ax}px,${ay}px) translate(-50%,-50%)`;t.style.opacity=1;t.textContent='region link';});
     svg.innerHTML=`<path d="${d}"/>`;
   }
 
@@ -1158,7 +1154,6 @@ async function initGlobe(){
   cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv.style.cursor='grabbing'});
   window.addEventListener('pointerup',()=>{if(drag){pPhi+=dPhi;pTheta+=dTheta;dPhi=dTheta=0;drag=null;cv.style.cursor='grab'}});
   window.addEventListener('pointermove',e=>{if(drag){dPhi=(e.clientX-drag.x)/200;dTheta=clampf((e.clientY-drag.y)/-300,-0.45,0.45)}});
-  setInterval(()=>{gTraffic=gTraffic.map(v=>Math.max(60,Math.min(680,v+Math.floor(Math.random()*31)-15)))},250);
 }
 function globeFallback(){const w=$('globe').parentElement;
   w.innerHTML='<div style="width:74%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 40% 34%,#fff,#f4f4f4 60%,#ececec);box-shadow:inset -16px -20px 46px rgba(0,0,0,.08),0 24px 50px rgba(0,0,0,.12);position:relative;background-image:radial-gradient(rgba(40,40,40,.55) 1px,transparent 1px);background-size:10px 10px" id="fbglobe"></div>';
