@@ -40,7 +40,7 @@ const IS_PROD = NODE_ENV === 'production';
 const RAW_DATABASE_URL = process.env.DATABASE_URL || '';
 const USE_POSTGRES = /^postgres(ql)?:\/\//i.test(RAW_DATABASE_URL);
 if (IS_PROD && !USE_POSTGRES) {
-  throw new Error('PostgreSQL DATABASE_URL is required in production. SQLite is local development only.');
+  throw new Error('Production requires PostgreSQL DATABASE_URL. SQLite is local development only.');
 }
 
 const CLUSTER = process.env.SOLANA_CLUSTER || 'mainnet-beta';

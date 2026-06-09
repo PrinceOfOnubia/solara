@@ -47,5 +47,5 @@ Existing SQLite data from `/data/solara-ledger.sqlite` is not automatically
 migrated. To preserve prior local ledger data, export rows from SQLite and import
 them into Railway Postgres before launch.
 
-Do not launch production with SQLite. The server refuses to start when
-`NODE_ENV=production` and `DATABASE_URL` is not a PostgreSQL URL.
+Do not launch production with SQLite. The server refuses to start with:
+`Production requires PostgreSQL DATABASE_URL. SQLite is local development only.`
