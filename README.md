@@ -130,7 +130,7 @@ MIN_PAYOUT_AMOUNT=100
 CLAIM_COOLDOWN_MINUTES=30
 DAILY_REWARD_CAP=500
 MAX_ACTIVE_SESSION_HOURS=24
-REWARD_WALLET_SECRET_JSON=
+REWARD_WALLET_PRIVATE_KEY=
 NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
 ALLOWED_ORIGINS=https://your-vercel-domain.vercel.app,https://www.solaraproject.live
 ```
@@ -145,9 +145,11 @@ Add Railway Postgres before real users. See
 [docs/postgres-migration.md](docs/postgres-migration.md). Do not launch with
 SQLite in production.
 
-`REWARD_WALLET_SECRET_JSON` is optional. If set, Railway can process approved
-payouts automatically or through the admin panel. Treat it as a hot wallet:
-fund it only with the amount needed for near-term rewards.
+`REWARD_WALLET_PRIVATE_KEY` is optional at startup. If missing, payout
+processing is disabled and the backend logs a warning. If set, it must be the
+reward wallet's Solana Base58 private key string. Treat it as a hot wallet:
+do not commit it, do not expose it to Vercel, and only place it in Railway if
+you want Railway to process approved payouts.
 
 Start with `ENABLE_AUTO_PAYOUTS=false` and use manual approval first. Fund the
 reward wallet with a small launch amount, monitor payout volume, then increase
@@ -165,14 +167,13 @@ SOLR_DECIMALS=9
 ADMIN_WALLET_PUBLIC_KEY=
 ADMIN_API_KEY=
 ADMIN_KEYPAIR_PATH=
-REWARD_WALLET_KEYPAIR_PATH=
-REWARD_WALLET_SECRET_JSON=
+REWARD_WALLET_PRIVATE_KEY=
 DATABASE_URL=
 API_BASE_URL=http://localhost:3000
 ```
 
-`ADMIN_KEYPAIR_PATH` and `REWARD_WALLET_KEYPAIR_PATH` stay local. Do not commit
-them and do not upload them to Vercel or Railway.
+`ADMIN_KEYPAIR_PATH` stays local. `REWARD_WALLET_PRIVATE_KEY` is a hot-wallet
+secret; do not commit it and do not upload it to Vercel.
 
 ## Admin Panel
 
@@ -218,7 +219,7 @@ The script requires:
 
 - `ADMIN_KEYPAIR_PATH` for signing the admin request locally
 - `API_BASE_URL`
-- `REWARD_WALLET_KEYPAIR_PATH` or `REWARD_WALLET_SECRET_JSON`
+- `REWARD_WALLET_PRIVATE_KEY`
 
 `ADMIN_API_KEY` is kept as a backend-only operations secret, but browser admin
 actions and the local batch script use wallet-signed admin authentication. Do not
@@ -229,7 +230,7 @@ Optional Railway automation:
 ```bash
 ENABLE_AUTO_PAYOUTS=true
 PAYOUT_INTERVAL_MINUTES=30
-REWARD_WALLET_SECRET_JSON=[...]
+REWARD_WALLET_PRIVATE_KEY=<base58-private-key>
 ```
 
 The batch processor pays approved requests only. It creates the user SOLR ATA if

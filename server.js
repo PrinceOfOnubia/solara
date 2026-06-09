@@ -7,6 +7,8 @@ const { AsyncLocalStorage } = require('async_hooks');
 const Database = require('better-sqlite3');
 const { Pool } = require('pg');
 const nacl = require('tweetnacl');
+const bs58Module = require('bs58');
+const bs58 = bs58Module.default || bs58Module;
 
 let web3Promise;
 let splTokenPromise;
@@ -70,6 +72,7 @@ const DEFAULT_SETTINGS = {
 let sqlite;
 let pgPool;
 const txStorage = new AsyncLocalStorage();
+let rewardWalletKeypairCache = null;
 function sqlitePath() {
   let raw = RAW_DATABASE_URL || path.join(__dirname, 'data', 'solara-ledger.sqlite');
   if (raw.startsWith('sqlite://')) raw = raw.slice('sqlite://'.length);
@@ -446,16 +449,38 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-function loadRewardWalletSecret() {
-  if (process.env.REWARD_WALLET_SECRET_JSON) return JSON.parse(process.env.REWARD_WALLET_SECRET_JSON);
-  if (process.env.REWARD_WALLET_KEYPAIR_PATH) return JSON.parse(fs.readFileSync(process.env.REWARD_WALLET_KEYPAIR_PATH, 'utf8'));
-  return null;
+function rewardWalletPrivateKey() {
+  return String(process.env.REWARD_WALLET_PRIVATE_KEY || '').trim();
+}
+function decodeRewardWalletSecretKey() {
+  const key = rewardWalletPrivateKey();
+  if (!key) return null;
+  try {
+    return bs58.decode(key);
+  } catch (_) {
+    throw new Error('REWARD_WALLET_PRIVATE_KEY must be a valid Solana Base58 private key string.');
+  }
+}
+async function validateRewardWalletConfig() {
+  const secretKey = decodeRewardWalletSecretKey();
+  if (!secretKey) {
+    console.warn('Reward wallet private key not configured. Payout processing disabled.');
+    return;
+  }
+  const { Keypair } = await solanaWeb3();
+  try {
+    rewardWalletKeypairCache = Keypair.fromSecretKey(secretKey);
+  } catch (_) {
+    throw new Error('REWARD_WALLET_PRIVATE_KEY decoded but is not a valid Solana secret key.');
+  }
 }
 async function rewardWalletKeypair() {
-  const secret = loadRewardWalletSecret();
-  if (!secret) throw new Error('Reward wallet is not configured');
+  if (rewardWalletKeypairCache) return rewardWalletKeypairCache;
+  const secretKey = decodeRewardWalletSecretKey();
+  if (!secretKey) throw new Error('Reward wallet private key not configured. Payout processing disabled.');
   const { Keypair } = await solanaWeb3();
-  return Keypair.fromSecretKey(Uint8Array.from(secret));
+  rewardWalletKeypairCache = Keypair.fromSecretKey(secretKey);
+  return rewardWalletKeypairCache;
 }
 async function connection() {
   if (!RPC_URL) throw new Error('SOLANA_RPC_URL is required');
@@ -763,11 +788,15 @@ let autoTimer;
 async function maybeStartAutoPayouts() {
   const settings = await settingsObject();
   if (boolVal(settings.ENABLE_AUTO_PAYOUTS)) {
+    if (!rewardWalletPrivateKey()) {
+      console.warn('Reward wallet private key not configured. Auto payout scheduler disabled.');
+      return;
+    }
     autoTimer = setInterval(() => processApprovedPayouts('auto').catch(e => console.error('auto payout failed:', e.message || e)), PAYOUT_INTERVAL_MINUTES * 60000);
   }
 }
 
-const ready = initDb().then(maybeStartAutoPayouts);
+const ready = initDb().then(validateRewardWalletConfig).then(maybeStartAutoPayouts);
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   ready.then(() => {

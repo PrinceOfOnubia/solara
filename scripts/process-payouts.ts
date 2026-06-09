@@ -55,9 +55,7 @@ function adminHeaders() {
 async function main() {
   loadEnv();
   requireEnv('ADMIN_KEYPAIR_PATH');
-  if (!process.env.REWARD_WALLET_KEYPAIR_PATH && !process.env.REWARD_WALLET_SECRET_JSON) {
-    throw new Error('REWARD_WALLET_KEYPAIR_PATH or REWARD_WALLET_SECRET_JSON is required to process payouts');
-  }
+  requireEnv('REWARD_WALLET_PRIVATE_KEY');
 
   const base = (process.env.API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
   const res = await fetch(`${base}/api/admin/payouts/process-batch`, {
