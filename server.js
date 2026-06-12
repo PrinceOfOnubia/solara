@@ -55,12 +55,14 @@ const PAYOUT_INTERVAL_MINUTES = Math.max(1, Number(process.env.PAYOUT_INTERVAL_M
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 const TOKEN_UNIT = 10n ** BigInt(SOLR_DECIMALS);
 const DEFAULT_RATES = [
+  { gpuTier: 'RTX 4080', ratePerMinute: 4 },
   { gpuTier: 'RTX 4090', ratePerMinute: 5 },
   { gpuTier: 'A100', ratePerMinute: 7 },
   { gpuTier: 'H100', ratePerMinute: 10 },
+  { gpuTier: 'H200', ratePerMinute: 12 },
 ];
 const DEFAULT_SETTINGS = {
-  MIN_PAYOUT_AMOUNT: process.env.MIN_PAYOUT_AMOUNT || '100',
+  MIN_PAYOUT_AMOUNT: process.env.MIN_PAYOUT_AMOUNT || '10',
   CLAIM_COOLDOWN_MINUTES: process.env.CLAIM_COOLDOWN_MINUTES || '30',
   DAILY_REWARD_CAP: process.env.DAILY_REWARD_CAP || '500',
   MAX_ACTIVE_SESSION_HOURS: process.env.MAX_ACTIVE_SESSION_HOURS || '24',
@@ -141,9 +143,11 @@ function numberTokens(units) {
 }
 function normalizeTier(input) {
   const key = String(input || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
-  if (key === '0' || key === 'rtx4090' || key === '4090') return 'RTX 4090';
-  if (key === '1' || key === 'a100') return 'A100';
-  if (key === '2' || key === 'h100') return 'H100';
+  if (key === '0' || key === 'rtx4080' || key === '4080') return 'RTX 4080';
+  if (key === '1' || key === 'rtx4090' || key === '4090') return 'RTX 4090';
+  if (key === '2' || key === 'a100') return 'A100';
+  if (key === '3' || key === 'h100') return 'H100';
+  if (key === '4' || key === 'h200') return 'H200';
   throw new Error('Invalid GPU tier');
 }
 function boolVal(v) {
@@ -221,7 +225,11 @@ async function seedRates() {
 }
 async function seedSettings() {
   for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
-    await run('INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO NOTHING', [key, value, nowIso()]);
+    if (process.env[key] !== undefined) {
+      await run('INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = ?', [key, value, nowIso(), value, nowIso()]);
+    } else {
+      await run('INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO NOTHING', [key, value, nowIso()]);
+    }
   }
 }
 async function setting(key) {
@@ -265,7 +273,7 @@ async function getRateUnits(gpuTier) {
   return row.rate_per_minute ?? row.rateperminute;
 }
 async function getRates() {
-  const rows = await all("SELECT gpu_tier AS \"gpuTier\", rate_per_minute AS \"ratePerMinuteUnits\" FROM reward_rates ORDER BY CASE gpu_tier WHEN 'RTX 4090' THEN 0 WHEN 'A100' THEN 1 WHEN 'H100' THEN 2 ELSE 9 END");
+  const rows = await all("SELECT gpu_tier AS \"gpuTier\", rate_per_minute AS \"ratePerMinuteUnits\" FROM reward_rates ORDER BY CASE gpu_tier WHEN 'RTX 4080' THEN 0 WHEN 'RTX 4090' THEN 1 WHEN 'A100' THEN 2 WHEN 'H100' THEN 3 WHEN 'H200' THEN 4 ELSE 9 END");
   return rows.map(r => ({ gpuTier: r.gpuTier ?? r.gputier, ratePerMinuteUnits: r.ratePerMinuteUnits ?? r.rateperminuteunits, ratePerMinute: tokensFromUnits(r.ratePerMinuteUnits ?? r.rateperminuteunits) }));
 }
 async function dailyEarnedUnits(wallet, sinceIso) {
@@ -297,18 +305,20 @@ async function accrueWallet(wallet) {
   if (!Number.isFinite(last) || now <= last || capReached) {
     return { balance: bal, dailyEarnedUnits: already, capReached };
   }
-  const elapsed = BigInt(now - last);
-  let earned = BigInt(session.rate_per_minute) * elapsed / 60000n;
+  const elapsedSeconds = BigInt(Math.floor((now - last) / 1000));
+  if (elapsedSeconds <= 0n) {
+    return { balance: bal, dailyEarnedUnits: already, capReached };
+  }
+  let earned = BigInt(session.rate_per_minute) * elapsedSeconds / 60n;
   if (already + earned > dailyCap) {
     earned = dailyCap - already;
     capReached = true;
   }
-  const ts = new Date(now).toISOString();
+  const accruedThrough = capReached ? now : last + Number(elapsedSeconds) * 1000;
+  const ts = new Date(accruedThrough).toISOString();
   if (earned > 0n) {
     await run('INSERT INTO reward_accrual_events (wallet, amount, created_at) VALUES (?, ?, ?)', [wallet, earned.toString(), ts]);
     await run('UPDATE reward_balances SET pending_amount = ?, last_accrued_at = ?, updated_at = ? WHERE wallet = ?', [(BigInt(bal.pending_amount || '0') + earned).toString(), ts, ts, wallet]);
-  } else {
-    await run('UPDATE reward_balances SET last_accrued_at = ?, updated_at = ? WHERE wallet = ?', [ts, ts, wallet]);
   }
   const updated = mapBalance(await get('SELECT * FROM reward_balances WHERE wallet = ?', [wallet]));
   return { balance: updated, dailyEarnedUnits: already + earned, capReached };
@@ -327,6 +337,12 @@ async function startSession(wallet, gpuTier) {
     await run('UPDATE validation_sessions SET active = ?, stopped_at = ? WHERE wallet = ? AND active = ?', [USE_POSTGRES ? false : 0, ts, wallet, USE_POSTGRES ? true : 1]);
     await run('INSERT INTO validation_sessions (wallet, gpu_tier, rate_per_minute, started_at, active) VALUES (?, ?, ?, ?, ?)', [wallet, gpuTier, rate, ts, USE_POSTGRES ? true : 1]);
     await run('UPDATE reward_balances SET last_accrued_at = ?, updated_at = ? WHERE wallet = ?', [ts, ts, wallet]);
+  });
+}
+async function stopSession(wallet) {
+  await withTx(async () => {
+    await accrueWallet(wallet);
+    await run('UPDATE validation_sessions SET active = ?, stopped_at = ? WHERE wallet = ? AND active = ?', [USE_POSTGRES ? false : 0, nowIso(), wallet, USE_POSTGRES ? true : 1]);
   });
 }
 async function payoutHistory(wallet) {
@@ -395,7 +411,9 @@ async function createClaimRequest(wallet, amountInput) {
     const min = unitsFromTokens(settings.MIN_PAYOUT_AMOUNT);
     if (amount <= 0n) throw new Error('No pending rewards available to request');
     if (amount > pending) throw new Error('Requested amount exceeds pending rewards');
-    if (amount < min) throw new Error(`Minimum payout is ${settings.MIN_PAYOUT_AMOUNT} SOLR.`);
+    if (amount < min) throw new Error(`Minimum payout is ${settings.MIN_PAYOUT_AMOUNT} SOLR. Keep validating to reach the payout threshold.`);
+    const openReq = await get('SELECT id, status FROM payout_requests WHERE wallet = ? AND status IN (?, ?) ORDER BY requested_at DESC LIMIT 1', [wallet, 'pending', 'approved']);
+    if (openReq) throw new Error('You already have a payout request pending approval.');
     const lastReq = await get('SELECT requested_at FROM payout_requests WHERE wallet = ? ORDER BY requested_at DESC LIMIT 1', [wallet]);
     if (lastReq) {
       const requestedAt = lastReq.requested_at ?? lastReq.requestedat;
@@ -597,7 +615,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 async function publicConfig() {
   const settings = await settingsObject();
   return {
-    mode: 'ledger-payout',
+    mode: 'gpu-rewards',
     database: USE_POSTGRES ? 'postgres' : 'sqlite-local',
     networkStartAtIso: new Date(Date.parse(NETWORK_START_AT_ISO)).toISOString(),
     solana: { cluster: CLUSTER, rpcUrl: RPC_URL, tokenMint: SOLR_MINT, tokenDecimals: SOLR_DECIMALS, adminWalletPublicKey: ADMIN_WALLET_PUBLIC_KEY },
@@ -630,6 +648,15 @@ app.post('/api/validate/start', async (req, res) => {
     res.status(400).json({ error: String(e.message || e) });
   }
 });
+app.post('/api/validate/stop', async (req, res) => {
+  try {
+    const wallet = await validateWallet(req.body.wallet);
+    await stopSession(wallet);
+    res.json({ ok: true, rewards: await rewardsPayload(wallet) });
+  } catch (e) {
+    res.status(400).json({ error: String(e.message || e) });
+  }
+});
 app.get('/api/user/:wallet/rewards', async (req, res) => {
   try {
     const wallet = await validateWallet(req.params.wallet);
@@ -651,7 +678,7 @@ app.get('/api/stats/global', async (_req, res) => {
   try {
     const s = await adminSummary();
     res.json({
-      mode: 'ledger-payout',
+      mode: 'gpu-rewards',
       activeValidators: s.activeValidators,
       validatorsEverStarted: s.validatorsEverStarted,
       totalClaimedTokens: numberTokens(s.totalPaidRewardsUnits),
@@ -729,9 +756,9 @@ app.post('/api/admin/rates', requireAdmin, async (req, res) => {
   try {
     const updates = req.body.rates || req.body;
     const ts = nowIso();
-    for (const name of ['RTX 4090', 'A100', 'H100']) {
+    for (const name of DEFAULT_RATES.map(r => r.gpuTier)) {
       const raw = updates[name] ?? updates[name.replace(/\s+/g, '')] ?? updates[name.toLowerCase().replace(/\s+/g, '')];
-      if (raw !== undefined) await run('UPDATE reward_rates SET rate_per_minute = ?, updated_at = ? WHERE gpu_tier = ?', [unitsFromTokens(raw).toString(), ts, name]);
+      if (raw !== undefined) await run('INSERT INTO reward_rates (gpu_tier, rate_per_minute, updated_at) VALUES (?, ?, ?) ON CONFLICT(gpu_tier) DO UPDATE SET rate_per_minute = ?, updated_at = ?', [name, unitsFromTokens(raw).toString(), ts, unitsFromTokens(raw).toString(), ts]);
     }
     await audit(req.adminWallet, 'update rates', updates);
     res.json({ ok: true, rates: await getRates() });
@@ -742,8 +769,7 @@ app.post('/api/admin/rates', requireAdmin, async (req, res) => {
 app.post('/api/admin/sessions/:wallet/stop', requireAdmin, async (req, res) => {
   try {
     const wallet = await validateWallet(req.params.wallet);
-    await accrueWallet(wallet);
-    await run('UPDATE validation_sessions SET active = ?, stopped_at = ? WHERE wallet = ? AND active = ?', [USE_POSTGRES ? false : 0, nowIso(), wallet, USE_POSTGRES ? true : 1]);
+    await stopSession(wallet);
     await audit(req.adminWallet, 'stop session', { wallet });
     res.json({ ok: true, rewards: await rewardsPayload(wallet) });
   } catch (e) {
@@ -801,7 +827,7 @@ const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   ready.then(() => {
     app.listen(PORT, () => {
-      console.log(`SOLARA ledger API -> http://localhost:${PORT}`);
+      console.log(`SOLARA rewards API -> http://localhost:${PORT}`);
       console.log(`database: ${USE_POSTGRES ? 'postgres' : 'sqlite-local'}`);
       console.log(`cluster: ${CLUSTER}`);
     });

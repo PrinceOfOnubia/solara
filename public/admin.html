@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SOLARA Admin · ledger payouts</title>
+<title>SOLARA Admin · GPU rewards</title>
 <script src="/runtime-config.js"></script>
 <style>
 :root{--bg:#f5efe7;--ink:#17120d;--muted:#806f60;--line:#e1d2c0;--card:#fffaf4;--accent:#f26a1b;--green:#15803d;--red:#b42318}
@@ -13,7 +13,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div><div class="logo">SOLARA ADMIN</div><div class="small">MVP ledger payout mode</div></div>
+    <div><div class="logo">SOLARA ADMIN</div><div class="small">GPU rewards control panel</div></div>
     <div class="top">
       <span class="pill" id="mode">mainnet-beta</span>
       <button class="btn ghost" id="connect">Connect admin wallet</button>
@@ -24,7 +24,7 @@
   <div class="unauth" id="gate">Unauthorized wallet. Connect the admin wallet to manage SOLARA.</div>
   <div class="grid">
     <div class="card"><div class="l">Reward wallet balance</div><div class="v" id="walletBalance">—</div><div class="small" id="walletAddr">—</div></div>
-    <div class="card"><div class="l">Active validators</div><div class="v" id="activeValidators">—</div><div class="small">ledger sessions currently active</div></div>
+    <div class="card"><div class="l">Active validators</div><div class="v" id="activeValidators">—</div><div class="small">validation sessions currently active</div></div>
     <div class="card"><div class="l">Pending payout requests</div><div class="v" id="pendingRequests">—</div><div class="small">awaiting approval</div></div>
     <div class="card"><div class="l">Total users</div><div class="v" id="totalUsers">—</div></div>
     <div class="card"><div class="l">Pending rewards</div><div class="v" id="pendingRewards">—</div></div>
@@ -60,9 +60,11 @@
   <div class="section card">
     <h3>Reward Rates</h3>
     <div class="form">
+      <label>RTX 4080 SOLR/min<input id="rate4080" inputmode="decimal"></label>
       <label>RTX 4090 SOLR/min<input id="rate4090" inputmode="decimal"></label>
       <label>A100 SOLR/min<input id="rateA100" inputmode="decimal"></label>
       <label>H100 SOLR/min<input id="rateH100" inputmode="decimal"></label>
+      <label>H200 SOLR/min<input id="rateH200" inputmode="decimal"></label>
     </div>
     <div class="actions"><button class="btn" id="saveRates">Update rates</button></div>
   </div>
@@ -96,17 +98,17 @@ const enc=s=>btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 function provider(){const list=(window.solana&&window.solana.providers)||[];return list.find(p=>p.isPhantom)||list.find(p=>p.isSolflare)||list.find(p=>p.isBackpack)||window.solana||(window.phantom&&window.phantom.solana)||window.solflare||(window.backpack&&window.backpack.solana)}
 async function api(path,opts={}){const r=await fetch(apiBase()+path,{headers:{'Content-Type':'application/json',...(authHeaders||{}),...(opts.headers||{})},...opts});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Request failed');return d}
 function status(msg){$('actionStatus').textContent=msg}
-async function loadConfig(){cfg=await api('/api/config');$('mode').textContent=cfg.solana.cluster+' · ledger';}
+async function loadConfig(){cfg=await api('/api/config');$('mode').textContent=cfg.solana.cluster+' · rewards';}
 async function connect(){const p=provider();if(!p){window.open('https://phantom.app/','_blank','noopener');return}const res=await p.connect();wallet=res.publicKey.toString();$('connect').textContent=wallet.slice(0,4)+'…'+wallet.slice(-4);$('auth').disabled=wallet!==cfg.solana.adminWalletPublicKey;$('gate').style.display=wallet===cfg.solana.adminWalletPublicKey?'none':'';}
 async function signAuth(){if(wallet!==cfg.solana.adminWalletPublicKey){$('gate').style.display='';return}const p=provider();const message=`SOLARA admin auth\nWallet: ${wallet}\nNonce: ${crypto.randomUUID?crypto.randomUUID():String(Date.now())}\nTimestamp: ${new Date().toISOString()}`;status('awaiting wallet approval');const sig=await p.signMessage(new TextEncoder().encode(message),'utf8');authHeaders={'X-Admin-Wallet':wallet,'X-Admin-Message':enc(message),'X-Admin-Signature':btoa(String.fromCharCode(...sig))};status('admin session authorized');await refresh();}
-function fillRates(rates){for(const r of rates||[]){if(r.gpuTier==='RTX 4090')$('rate4090').value=r.ratePerMinute;if(r.gpuTier==='A100')$('rateA100').value=r.ratePerMinute;if(r.gpuTier==='H100')$('rateH100').value=r.ratePerMinute}}
+function fillRates(rates){for(const r of rates||[]){if(r.gpuTier==='RTX 4080')$('rate4080').value=r.ratePerMinute;if(r.gpuTier==='RTX 4090')$('rate4090').value=r.ratePerMinute;if(r.gpuTier==='A100')$('rateA100').value=r.ratePerMinute;if(r.gpuTier==='H100')$('rateH100').value=r.ratePerMinute;if(r.gpuTier==='H200')$('rateH200').value=r.ratePerMinute}}
 function fillSettings(settings){settings=settings||{};$('setMin').value=settings.MIN_PAYOUT_AMOUNT||'';$('setCooldown').value=settings.CLAIM_COOLDOWN_MINUTES||'';$('setDaily').value=settings.DAILY_REWARD_CAP||'';$('setMaxHours').value=settings.MAX_ACTIVE_SESSION_HOURS||'';$('setAuto').value=settings.ENABLE_AUTO_PAYOUTS||'false'}
 async function refresh(){status('refreshing');const s=await api('/api/admin/summary');$('walletBalance').textContent=(s.rewardWallet.balance||'0')+' SOLR';$('walletAddr').textContent=s.rewardWallet.rewardWallet||s.rewardWallet.error||'reward wallet not configured';$('activeValidators').textContent=s.activeValidators;$('pendingRequests').textContent=s.pendingPayoutRequestCount;$('totalUsers').textContent=s.totalUsers;$('pendingRewards').textContent=s.totalPendingRewards+' SOLR';$('paidRewards').textContent=s.totalPaidRewards+' SOLR';$('pausedState').textContent=s.paused?'yes':'no';$('autoPayouts').textContent=s.autoPayoutsEnabled?'enabled':'disabled';$('interval').textContent=s.payoutIntervalMinutes+' minutes';fillRates(s.rates);fillSettings(s.settings);await loadPayouts();await loadBlacklist();await loadAudit();status('ready')}
 async function loadPayouts(){const d=await api('/api/admin/payouts?status=pending');$('payouts').innerHTML=d.payouts.length?d.payouts.map(p=>`<div class="payout"><div><div class="mono">${p.wallet}</div><div class="small">requested ${new Date(p.requestedAt).toLocaleString()}</div></div><b>${Number(p.amountTokens).toFixed(4)} SOLR</b><span>${p.status}</span><div class="actions"><button class="btn ok" onclick="approve(${p.id})">Approve</button><button class="btn danger" onclick="reject(${p.id})">Reject</button></div></div>`).join(''):'<div class="small">No pending payout requests.</div>'}
 async function approve(id){status('approving payout #'+id);await api('/api/admin/payouts/'+id+'/approve',{method:'POST',body:'{}'});await refresh()}
 async function reject(id){status('rejecting payout #'+id);await api('/api/admin/payouts/'+id+'/reject',{method:'POST',body:JSON.stringify({reason:'rejected by admin'})});await refresh()}
 async function processBatch(){status('processing approved batch');try{const d=await api('/api/admin/payouts/process-batch',{method:'POST',body:'{}'});status('batch '+d.result.status+' · '+d.result.txCount+' paid');await refresh()}catch(e){status(e.message)}}
-async function saveRates(){status('updating rates');await api('/api/admin/rates',{method:'POST',body:JSON.stringify({rates:{'RTX 4090':$('rate4090').value,A100:$('rateA100').value,H100:$('rateH100').value}})});await refresh()}
+async function saveRates(){status('updating rates');await api('/api/admin/rates',{method:'POST',body:JSON.stringify({rates:{'RTX 4080':$('rate4080').value,'RTX 4090':$('rate4090').value,A100:$('rateA100').value,H100:$('rateH100').value,H200:$('rateH200').value}})});await refresh()}
 async function pauseRewards(){status('pausing');await api('/api/admin/pause',{method:'POST',body:'{}'});await refresh()}
 async function resumeRewards(){status('resuming');await api('/api/admin/resume',{method:'POST',body:'{}'});await refresh()}
 async function saveSettings(){status('updating settings');await api('/api/admin/settings',{method:'POST',body:JSON.stringify({settings:{MIN_PAYOUT_AMOUNT:$('setMin').value,CLAIM_COOLDOWN_MINUTES:$('setCooldown').value,DAILY_REWARD_CAP:$('setDaily').value,MAX_ACTIVE_SESSION_HOURS:$('setMaxHours').value,ENABLE_AUTO_PAYOUTS:$('setAuto').value}})});await refresh()}

@@ -1,11 +1,11 @@
-# SOLARA MVP Ledger Payout Mode
+# SOLARA GPU Rewards Beta
 
-SOLARA currently runs in MVP ledger payout mode. Users connect a Solana wallet,
-choose a GPU plan, start a backend validation session, accrue SOLR in the
-backend ledger, and request a payout. Admins approve requests and pay users from
+SOLARA runs a GPU validation rewards flow. Users connect a Solana wallet,
+choose a GPU plan, start a validation session, accrue SOLR from server-tracked
+session time, and request a payout. Admins approve requests and pay users from
 the reward wallet manually or with the optional batch processor.
 
-No Anchor deployment is required for the current MVP mode. The Anchor program in
+No Anchor deployment is required for the current beta flow. The Anchor program in
 `programs/solara_rewards` is kept as optional future on-chain vault mode.
 
 ## Install And Run
@@ -18,7 +18,7 @@ npm start
 
 Open `http://localhost:3000`.
 
-## MVP Ledger Payout Mode
+## GPU Rewards Flow
 
 Flow:
 
@@ -27,16 +27,19 @@ Flow:
    - RTX 4090 = 5 SOLR/min
    - A100 = 7 SOLR/min
    - H100 = 10 SOLR/min
+   - RTX 4080 = 4 SOLR/min
+   - H200 = 12 SOLR/min
 3. User clicks `Start validating`.
-4. Backend creates a ledger validation session.
-5. Backend accrues pending SOLR from elapsed time and the selected plan.
+4. The server creates a validation session.
+5. The server accrues pending SOLR from elapsed time and the selected plan.
 6. User clicks `Request Payout`.
 7. Pending rewards are reserved in `payout_requests`.
 8. Admin approves or rejects the request in `/admin`.
 9. Admin processes a batch payout from the reward wallet SOLR ATA to user ATAs.
 
-The frontend shows ledger values only for user rewards: pending rewards, paid
-rewards, active plan, and payout history all come from the backend ledger.
+The frontend shows production values only for user rewards: pending rewards,
+paid rewards, active plan, and payout history all come from the server and
+database state.
 
 ## Database
 
@@ -66,6 +69,7 @@ User endpoints:
 
 ```text
 POST /api/validate/start
+POST /api/validate/stop
 GET  /api/user/:wallet/rewards
 POST /api/claim/request
 ```
@@ -126,7 +130,7 @@ ADMIN_WALLET_PUBLIC_KEY=
 ADMIN_API_KEY=
 ENABLE_AUTO_PAYOUTS=false
 PAYOUT_INTERVAL_MINUTES=30
-MIN_PAYOUT_AMOUNT=100
+MIN_PAYOUT_AMOUNT=10
 CLAIM_COOLDOWN_MINUTES=30
 DAILY_REWARD_CAP=500
 MAX_ACTIVE_SESSION_HOURS=24
@@ -259,7 +263,7 @@ signature, and marks failed payouts with an error.
 The optional Anchor program supports a future direct-claim model where a program
 PDA owns the reward vault and users claim from on-chain validator accounts. That
 mode requires Anchor deploy/config/vault funding and is not required for this
-MVP ledger launch.
+beta launch.
 
 ## Verification
 

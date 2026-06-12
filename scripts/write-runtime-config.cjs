@@ -6,7 +6,7 @@ const path = require('path');
 const config = {
   SOLARA_API_BASE_URL: process.env.API_BASE_URL || '',
   SOLARA_CONFIG: {
-    mode: 'ledger-payout',
+    mode: 'gpu-rewards',
     solana: {
       cluster: process.env.SOLANA_CLUSTER || 'mainnet-beta',
       rpcUrl: process.env.SOLANA_RPC_URL || '',

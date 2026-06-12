@@ -25,6 +25,7 @@
     "admin:resume": "tsx scripts/resume.ts",
     "admin:withdraw": "tsx scripts/admin-withdraw.ts",
     "admin:process-payouts": "tsx scripts/process-payouts.ts",
+    "smoke:ledger": "node scripts/smoke-ledger.js",
     "verify:mainnet": "tsx scripts/verify-mainnet.ts",
     "deploy:mainnet:checklist": "cat MAINNET_LAUNCH_CHECKLIST.md"
   },
