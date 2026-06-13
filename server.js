@@ -64,7 +64,6 @@ const DEFAULT_RATES = [
 const DEFAULT_SETTINGS = {
   MIN_PAYOUT_AMOUNT: process.env.MIN_PAYOUT_AMOUNT || '10',
   CLAIM_COOLDOWN_MINUTES: process.env.CLAIM_COOLDOWN_MINUTES || '30',
-  DAILY_REWARD_CAP: process.env.DAILY_REWARD_CAP || '500',
   MAX_ACTIVE_SESSION_HOURS: process.env.MAX_ACTIVE_SESSION_HOURS || '24',
   ENABLE_AUTO_PAYOUTS: process.env.ENABLE_AUTO_PAYOUTS || 'false',
   PAUSE_REWARDS: process.env.PAUSE_REWARDS || 'false',
@@ -298,30 +297,24 @@ async function accrueWallet(wallet) {
   if (!session) return { balance: bal, dailyEarnedUnits: await dailyEarnedUnits(wallet, new Date(Date.now() - 86400000).toISOString()), capReached: false };
   const last = Date.parse(bal.last_accrued_at || session.started_at);
   const now = Date.now();
-  const dailyCap = unitsFromTokens(await setting('DAILY_REWARD_CAP'));
   const since = new Date(now - 86400000).toISOString();
   const already = await dailyEarnedUnits(wallet, since);
-  let capReached = already >= dailyCap;
-  if (!Number.isFinite(last) || now <= last || capReached) {
-    return { balance: bal, dailyEarnedUnits: already, capReached };
+  if (!Number.isFinite(last) || now <= last) {
+    return { balance: bal, dailyEarnedUnits: already, capReached: false };
   }
   const elapsedSeconds = BigInt(Math.floor((now - last) / 1000));
   if (elapsedSeconds <= 0n) {
-    return { balance: bal, dailyEarnedUnits: already, capReached };
+    return { balance: bal, dailyEarnedUnits: already, capReached: false };
   }
-  let earned = BigInt(session.rate_per_minute) * elapsedSeconds / 60n;
-  if (already + earned > dailyCap) {
-    earned = dailyCap - already;
-    capReached = true;
-  }
-  const accruedThrough = capReached ? now : last + Number(elapsedSeconds) * 1000;
+  const earned = BigInt(session.rate_per_minute) * elapsedSeconds / 60n;
+  const accruedThrough = last + Number(elapsedSeconds) * 1000;
   const ts = new Date(accruedThrough).toISOString();
   if (earned > 0n) {
     await run('INSERT INTO reward_accrual_events (wallet, amount, created_at) VALUES (?, ?, ?)', [wallet, earned.toString(), ts]);
     await run('UPDATE reward_balances SET pending_amount = ?, last_accrued_at = ?, updated_at = ? WHERE wallet = ?', [(BigInt(bal.pending_amount || '0') + earned).toString(), ts, ts, wallet]);
   }
   const updated = mapBalance(await get('SELECT * FROM reward_balances WHERE wallet = ?', [wallet]));
-  return { balance: updated, dailyEarnedUnits: already + earned, capReached };
+  return { balance: updated, dailyEarnedUnits: already + earned, capReached: false };
 }
 async function accrueAllActive() {
   const rows = await all('SELECT DISTINCT wallet FROM validation_sessions WHERE active = ?', [USE_POSTGRES ? true : 1]);
@@ -389,8 +382,7 @@ async function rewardsPayload(wallet) {
     cooldownRemainingMinutes,
     dailyEarnedUnits: accrued.dailyEarnedUnits.toString(),
     dailyEarned: tokensFromUnits(accrued.dailyEarnedUnits),
-    dailyCap: settings.DAILY_REWARD_CAP,
-    capReached: accrued.capReached,
+    capReached: false,
     paused,
     payoutRequestsDisabled: paused && !allowPaused,
     blacklisted,
@@ -423,7 +415,7 @@ async function createClaimRequest(wallet, amountInput) {
     }
     const ts = nowIso();
     await run('UPDATE reward_balances SET pending_amount = ?, updated_at = ? WHERE wallet = ?', [(pending - amount).toString(), ts, wallet]);
-    const id = await insertId('INSERT INTO payout_requests (wallet, amount, status, requested_at) VALUES (?, ?, ?, ?)', [wallet, amount.toString(), 'pending', ts]);
+    const id = await insertId('INSERT INTO payout_requests (wallet, amount, status, requested_at, approved_at) VALUES (?, ?, ?, ?, ?)', [wallet, amount.toString(), 'approved', ts, ts]);
     return { id, amountUnits: amount.toString(), amount: tokensFromUnits(amount) };
   });
 }
@@ -624,7 +616,6 @@ async function publicConfig() {
     settings: {
       minPayoutAmount: settings.MIN_PAYOUT_AMOUNT,
       claimCooldownMinutes: settings.CLAIM_COOLDOWN_MINUTES,
-      dailyRewardCap: settings.DAILY_REWARD_CAP,
       maxActiveSessionHours: settings.MAX_ACTIVE_SESSION_HOURS,
       paused: boolVal(settings.PAUSE_REWARDS),
       payoutRequestsDisabled: boolVal(settings.PAUSE_REWARDS) && !boolVal(settings.ALLOW_PAYOUT_REQUESTS_WHEN_PAUSED),
@@ -702,7 +693,7 @@ app.get('/api/stats/activity', async (_req, res) => {
 app.get('/api/admin/summary', requireAdmin, async (_req, res) => res.json(await adminSummary()));
 app.get('/api/admin/settings', requireAdmin, async (_req, res) => res.json({ settings: await settingsObject() }));
 app.post('/api/admin/settings', requireAdmin, async (req, res) => {
-  const allowed = ['MIN_PAYOUT_AMOUNT', 'CLAIM_COOLDOWN_MINUTES', 'DAILY_REWARD_CAP', 'MAX_ACTIVE_SESSION_HOURS', 'ENABLE_AUTO_PAYOUTS', 'ALLOW_PAYOUT_REQUESTS_WHEN_PAUSED'];
+  const allowed = ['MIN_PAYOUT_AMOUNT', 'CLAIM_COOLDOWN_MINUTES', 'MAX_ACTIVE_SESSION_HOURS', 'ENABLE_AUTO_PAYOUTS', 'ALLOW_PAYOUT_REQUESTS_WHEN_PAUSED'];
   const updates = req.body.settings || req.body;
   const ts = nowIso();
   for (const key of allowed) {

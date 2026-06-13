@@ -2,8 +2,8 @@
 
 SOLARA runs a GPU validation rewards flow. Users connect a Solana wallet,
 choose a GPU plan, start a validation session, accrue SOLR from server-tracked
-session time, and request a payout. Admins approve requests and pay users from
-the reward wallet manually or with the optional batch processor.
+session time, and request a payout. Eligible payout requests auto-approve for
+batch payout from the reward wallet.
 
 No Anchor deployment is required for the current beta flow. The Anchor program in
 `programs/solara_rewards` is kept as optional future on-chain vault mode.
@@ -33,8 +33,8 @@ Flow:
 4. The server creates a validation session.
 5. The server accrues pending SOLR from elapsed time and the selected plan.
 6. User clicks `Request Payout`.
-7. Pending rewards are reserved in `payout_requests`.
-8. Admin approves or rejects the request in `/admin`.
+7. Pending rewards are reserved in `payout_requests` as approved requests.
+8. Admin can reject a request in `/admin` if needed.
 9. Admin processes a batch payout from the reward wallet SOLR ATA to user ATAs.
 
 The frontend shows production values only for user rewards: pending rewards,
@@ -132,7 +132,6 @@ ENABLE_AUTO_PAYOUTS=false
 PAYOUT_INTERVAL_MINUTES=30
 MIN_PAYOUT_AMOUNT=10
 CLAIM_COOLDOWN_MINUTES=30
-DAILY_REWARD_CAP=500
 MAX_ACTIVE_SESSION_HOURS=24
 REWARD_WALLET_PRIVATE_KEY=
 NETWORK_START_AT_ISO=2026-06-08T18:00:00.000Z
@@ -192,7 +191,7 @@ Steps:
 1. Connect the admin wallet.
 2. Sign the admin authorization message.
 3. Review summary cards and reward wallet balance.
-4. Approve or reject pending payout requests.
+4. Review or reject approved payout requests.
 5. Click `Process approved batch` to send SOLR to users.
 6. Update GPU reward rates when needed.
 7. Pause/resume rewards during incidents.
@@ -254,7 +253,7 @@ signature, and marks failed payouts with an error.
 9. Verify `/api/stats/global`.
 10. Test `Start validating` with a small wallet.
 11. Wait briefly and test `Request Payout`.
-12. Connect `/admin`, approve the request, and process a tiny payout.
+12. Connect `/admin`, review the auto-approved request, and process a tiny payout.
 13. Confirm reward wallet SOLR decreases.
 14. Confirm user SOLR ATA balance increases.
 

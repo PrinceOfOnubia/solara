@@ -11,7 +11,6 @@ process.env.NODE_ENV = 'development';
 process.env.DATABASE_URL = dbPath;
 process.env.MIN_PAYOUT_AMOUNT = '10';
 process.env.CLAIM_COOLDOWN_MINUTES = '0';
-process.env.DAILY_REWARD_CAP = '500';
 process.env.MAX_ACTIVE_SESSION_HOURS = '24';
 process.env.ENABLE_AUTO_PAYOUTS = 'false';
 
@@ -62,6 +61,8 @@ async function main() {
     db.prepare('UPDATE reward_balances SET pending_amount = ? WHERE wallet = ?').run((10n * UNIT).toString(), wallet);
     r = await req('/api/claim/request', { method: 'POST', body: JSON.stringify({ wallet }) });
     assert(r.res.ok && r.json.request.amount === '10', 'At-minimum payout should create request');
+    const payout = db.prepare('SELECT status, approved_at FROM payout_requests WHERE wallet = ? ORDER BY id DESC LIMIT 1').get(wallet);
+    assert(payout.status === 'approved' && payout.approved_at, 'Eligible payout request should auto-approve');
 
     r = await req('/api/validate/start', { method: 'POST', body: JSON.stringify({ wallet, gpuTier: 'RTX 4090' }) });
     assert(r.res.ok, 'New session should start');
@@ -69,12 +70,6 @@ async function main() {
     assert(r.res.ok, 'Switching plan should start');
     const activeCount = db.prepare('SELECT COUNT(*) AS c FROM validation_sessions WHERE wallet = ? AND active = 1').get(wallet).c;
     assert(activeCount === 1, `Wallet should have one active session, got ${activeCount}`);
-
-    db.prepare("INSERT INTO system_settings (key,value,updated_at) VALUES ('DAILY_REWARD_CAP','5',?) ON CONFLICT(key) DO UPDATE SET value='5', updated_at=?").run(new Date().toISOString(), new Date().toISOString());
-    db.prepare('UPDATE reward_balances SET last_accrued_at = ?, pending_amount = ? WHERE wallet = ?').run(new Date(Date.now() - 60050).toISOString(), '0', wallet);
-    db.prepare('DELETE FROM reward_accrual_events WHERE wallet = ?').run(wallet);
-    r = await req(`/api/user/${wallet}/rewards`);
-    assert(r.json.dailyEarned === '5' && r.json.capReached === true, 'Daily cap should be enforced at 5 SOLR');
 
     db.prepare("INSERT INTO system_settings (key,value,updated_at) VALUES ('PAUSE_REWARDS','true',?) ON CONFLICT(key) DO UPDATE SET value='true', updated_at=?").run(new Date().toISOString(), new Date().toISOString());
     r = await req('/api/validate/start', { method: 'POST', body: JSON.stringify({ wallet: wallet2, gpuTier: 'H200' }) });
