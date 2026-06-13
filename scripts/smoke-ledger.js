@@ -56,13 +56,13 @@ async function main() {
     assert(r.json.pendingAmount === stoppedPending, 'Stopped session must not keep accruing');
 
     r = await req('/api/claim/request', { method: 'POST', body: JSON.stringify({ wallet }) });
-    assert(!r.res.ok && /Minimum payout is 10 SOLR/.test(r.json.error), 'Below-minimum payout should return readable 10 SOLR error');
+    assert(!r.res.ok && /Minimum withdrawal is 10 SOLR/.test(r.json.error), 'Below-minimum withdrawal should return readable 10 SOLR error');
 
     db.prepare('UPDATE reward_balances SET pending_amount = ? WHERE wallet = ?').run((10n * UNIT).toString(), wallet);
     r = await req('/api/claim/request', { method: 'POST', body: JSON.stringify({ wallet }) });
-    assert(r.res.ok && r.json.request.amount === '10', 'At-minimum payout should create request');
+    assert(r.res.ok && r.json.request.amount === '10', 'At-minimum withdrawal should create request');
     const payout = db.prepare('SELECT status, approved_at FROM payout_requests WHERE wallet = ? ORDER BY id DESC LIMIT 1').get(wallet);
-    assert(payout.status === 'approved' && payout.approved_at, 'Eligible payout request should auto-approve');
+    assert(payout.status === 'approved' && payout.approved_at, 'Eligible withdrawal should auto-approve');
 
     r = await req('/api/validate/start', { method: 'POST', body: JSON.stringify({ wallet, gpuTier: 'RTX 4090' }) });
     assert(r.res.ok, 'New session should start');
@@ -80,7 +80,7 @@ async function main() {
     r = await req('/api/validate/start', { method: 'POST', body: JSON.stringify({ wallet: wallet2, gpuTier: 'H200' }) });
     assert(!r.res.ok && /blacklisted/i.test(r.json.error), 'Blacklist should block start');
     r = await req('/api/claim/request', { method: 'POST', body: JSON.stringify({ wallet: wallet2 }) });
-    assert(!r.res.ok && /blacklisted/i.test(r.json.error), 'Blacklist should block payout requests');
+    assert(!r.res.ok && /blacklisted/i.test(r.json.error), 'Blacklist should block withdrawals');
 
     console.log('SOLARA rewards smoke checks passed');
   } finally {

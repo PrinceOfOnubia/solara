@@ -442,7 +442,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   header.nav{position:sticky}
   .nav-in{height:62px;gap:8px}
   .logo{font-size:19px}
-  .byline,.navlinks,.icbtn,.onlinepill,.nav-in>.btn:not(.dark){display:none!important}
+  .byline,.navlinks,.nav-in>.icbtn,.onlinepill,.nav-in>.btn:not(.dark){display:none!important}
   #connectBtn{margin-left:auto;padding:9px 12px;font-size:13px;border-radius:10px;max-width:138px;overflow:hidden;text-overflow:ellipsis}
   .hamb{display:grid;flex:none}
   .mobile-menu{display:block;position:fixed;left:12px;right:12px;top:72px;z-index:59;background:rgba(255,255,255,.86);backdrop-filter:var(--gb);-webkit-backdrop-filter:var(--gb);border:1px solid var(--glass-brd);border-radius:18px;box-shadow:var(--gsh-lg);padding:12px;opacity:0;pointer-events:none;transform:translateY(-10px);transition:.18s}
@@ -451,6 +451,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   .mobile-menu a:hover,.mobile-menu button:hover{background:var(--brand-soft);color:var(--brand-deep)}
   .mobile-menu .micons{display:flex;gap:10px;padding:8px 4px 4px}
   .mobile-menu .micons a{width:42px;height:42px;justify-content:center;border:1px solid var(--line2);background:rgba(255,255,255,.58);padding:0}
+  .mobile-menu .micons svg{display:block}
   .hero{padding-top:38px!important;gap:28px}
   .hero h1{font-size:44px;max-width:10.5ch}
   .lede{font-size:16px}
@@ -469,6 +470,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   .vm-stats{grid-template-columns:1fr}
   .tokwrap,.calc{gap:14px}
   .rmap{grid-template-columns:1fr}
+  .alloc .ar>span:first-child{width:104px!important;line-height:1.25}
 }
 </style>
 
@@ -497,7 +499,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   <button onclick="closeMobileMenu();go('#validator')">Start validating <span>→</span></button>
   <div class="micons">
     <a id="mxBtn" target="_blank" rel="noopener" aria-label="X">X</a>
-    <a id="mghBtn" href="https://github.com/jolliesol/canas-core" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
+    <a id="mghBtn" href="https://github.com/jolliesol/canas-core" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.8-.01 3.18 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg></a>
   </div>
 </div>
 
@@ -535,7 +537,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
 
   <div class="strip">
     <div class="tile"><div class="l">Active validators</div><div class="v tnum" id="t_frames">—</div><div class="s" id="t_frames_s">live sessions</div></div>
-    <div class="tile"><div class="l">Total paid</div><div class="v tnum" id="t_usdc">—</div><div class="s" id="t_usdc_s">$SOLR payouts</div></div>
+    <div class="tile"><div class="l">Total paid</div><div class="v tnum" id="t_usdc">—</div><div class="s" id="t_usdc_s">$SOLR withdrawals</div></div>
     <div class="tile"><div class="l">Validators started</div><div class="v tnum" id="t_jobs">—</div><div class="s">all time</div></div>
     <div class="tile"><div class="l">Total paid $</div><div class="v tnum" id="t_flops">—</div><div class="s">USD equivalent</div></div>
   </div>
@@ -600,7 +602,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
     <div class="strip network-stats" style="display:none">
       <div class="tile"><div class="l">GPUs online</div><div class="v tnum" id="n_gpus">—</div><div class="s" id="n_gpus_s">— registered</div></div>
       <div class="tile"><div class="l">Active validators</div><div class="v tnum" id="n_active">—</div><div class="s" id="n_active_s">live sessions</div></div>
-      <div class="tile"><div class="l">Pending rewards</div><div class="v tnum" id="n_frames">—</div><div class="s" id="n_frames_s">$SOLR awaiting payout</div></div>
+      <div class="tile"><div class="l">Pending rewards</div><div class="v tnum" id="n_frames">—</div><div class="s" id="n_frames_s">$SOLR ready to withdraw</div></div>
       <div class="tile"><div class="l">Paid rewards</div><div class="v tnum" id="n_usdc">—</div><div class="s" id="n_usdc_s">sent to users</div></div>
     </div>
     <div class="netgrid">
@@ -610,7 +612,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
         <div class="card globecard"><div class="card-h"><h3>Provider map</h3><span class="meta" id="globeMeta">— regions</span></div>
           <div class="globewrap"><canvas id="globe"></canvas></div>
           <div class="globefoot"><span class="leg"><b></b>active validator</span><span id="globeAgg">mainnet</span></div></div>
-        <div class="card"><div class="card-h"><h3>Top providers</h3><span class="meta">recent payouts</span></div>
+        <div class="card"><div class="card-h"><h3>Top providers</h3><span class="meta">recent withdrawals</span></div>
           <div id="leaderboard" style="padding:4px 0"></div></div>
       </div>
     </div>
@@ -624,15 +626,15 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
     <div class="trust">
       <div class="tc"><div class="th"><h4>Wallet sessions</h4><span class="tbadge">one active GPU</span></div>
         <p>Each wallet can run one active validation session. Starting a new plan closes the old session after rewards are accrued.</p></div>
-      <div class="tc"><div class="th"><h4>Payout threshold</h4><span class="tbadge">10 SOLR minimum</span></div>
-        <p>Payout requests are only created once claimable rewards reach the configured threshold, keeping tiny claims out of the queue.</p></div>
+      <div class="tc"><div class="th"><h4>Withdraw threshold</h4><span class="tbadge">10 SOLR minimum</span></div>
+        <p>Withdrawals are available once claimable rewards reach the configured threshold, keeping tiny withdrawals out of the queue.</p></div>
       <div class="tc"><div class="th"><h4>Admin controls</h4><span class="tbadge">pause · blacklist · approve</span></div>
-        <p>The admin wallet can pause rewards, manage rates, approve payout flow, and block abusive wallets from starting new sessions.</p></div>
+        <p>The admin wallet can pause rewards, manage rates, approve withdrawal flow, and block abusive wallets from starting new sessions.</p></div>
       <div class="tc"><div class="th"><h4>Withdrawals</h4><span class="tbadge">SOLR rewards</span></div>
         <p>Withdrawals are tracked clearly from request through completion.</p></div>
     </div>
     <div class="tstats">
-      <div class="tile"><div class="l">Min payout</div><div class="v tnum" id="tr_canary">10 SOLR</div></div>
+      <div class="tile"><div class="l">Min withdraw</div><div class="v tnum" id="tr_canary">10 SOLR</div></div>
       <div class="tile"><div class="l">Cooldown</div><div class="v tnum" id="tr_disp">30m</div></div>
       <div class="tile"><div class="l">Platform</div><div class="v tnum" id="tr_slash">Live</div></div>
       <div class="tile"><div class="l">Network</div><div class="v tnum" style="color:var(--green)" id="tr_pass">—</div></div>
@@ -661,7 +663,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
           <div class="orow"><span>Electricity estimate / day</span><b class="neg" id="c_power">−$—</b></div>
           <div class="orow"><span>Plan reward rate</span><b class="pos" id="c_net">—</b></div>
           <div class="orow"><span>GPU plan</span><b id="c_thr">—</b></div>
-          <div class="orow"><span>Minimum payout</span><b id="c_bond">10 SOLR</b></div>
+          <div class="orow"><span>Minimum withdrawal</span><b id="c_bond">10 SOLR</b></div>
           <div class="orow"><span>Time to threshold</span><b id="c_payback">—</b></div>
         </div>
         <div class="rankchip"><div>Selected GPU plan<div style="font-size:12px;opacity:.85;font-weight:500" id="c_rankof">live reward rate</div></div><div class="big" id="c_rank">—</div></div>
@@ -800,6 +802,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
 <footer><div class="wrap foot">
   <div class="logo" style="font-size:18px"><div class="mark" style="width:23px;height:23px"></div>SOLARA</div>
   <div>Live on Solana · GPU validation rewards · $SOLR · MIT.</div>
+  <div class="linkrow" style="margin-top:0"><a class="icbtn" id="fxBtn" target="_blank" rel="noopener" title="X / Twitter" aria-label="X"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z"/></svg></a><a class="icbtn" id="fghBtn" href="https://github.com/jolliesol/canas-core" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.8-.01 3.18 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg></a></div>
 </div></footer>
 
 <script>
@@ -826,7 +829,7 @@ const TOKEN = {
 
   // Fallback numbers shown before the token is live / if APIs are unreachable:
   previewPrice: 0.0413,
-  circulatingSupply: 182_400_000,
+  circulatingSupply: 300_000_000,
   totalSupply: 1_000_000_000,
 
   // Token allocation (must add up to 100). Team allocation intentionally removed.
@@ -849,6 +852,8 @@ function wireSocial(){
   const gb=$('ghBtn');if(gb&&SOCIAL.github)gb.href=SOCIAL.github;
   const mxb=$('mxBtn');if(mxb){if(SOCIAL.x){mxb.href=SOCIAL.x}else{mxb.removeAttribute('href');mxb.style.opacity=.55}}
   const mgb=$('mghBtn');if(mgb&&SOCIAL.github)mgb.href=SOCIAL.github;
+  const fxb=$('fxBtn');if(fxb){if(SOCIAL.x){fxb.href=SOCIAL.x;fxb.classList.remove('placeholder')}else{fxb.classList.add('placeholder');fxb.removeAttribute('href');fxb.title='X — add your account in SOCIAL.x'}}
+  const fgb=$('fghBtn');if(fgb&&SOCIAL.github)fgb.href=SOCIAL.github;
 }
 /* ──────────────────────────────────────────────────────────────────── */
 
@@ -1122,7 +1127,7 @@ function renderToken(){
   $('splitLegend').innerHTML=split.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span>${s.l} · <b>&nbsp;${s.p}%</b></div>`).join('');
   // allocation (from config, scaled to the max for bar widths)
   const mx=Math.max(...TOKEN.allocation.map(a=>a[1]));
-  $('alloc').innerHTML=TOKEN.allocation.map(a=>`<div class="ar"><span style="width:150px">${a[0]}</span><span class="track"><i style="width:${a[1]/mx*100}%"></i></span><span class="pct">${a[1]}%</span></div>`).join('');
+  $('alloc').innerHTML=TOKEN.allocation.map(a=>`<div class="ar"><span style="width:150px">${a[0].replace('Community & ecosystem','Community &<br>ecosystem')}</span><span class="track"><i style="width:${a[1]/mx*100}%"></i></span><span class="pct">${a[1]}%</span></div>`).join('');
   $('utility').innerHTML=['Provider bond — slashed for fabricated or substituted output','Verifier stake — collateral for honest re-checks','Governance — network params, fee rates, model set','Priority routing & reduced fees for holders'].map(u=>`<li>${u}</li>`).join('');
   fetchTokenMarket();
 }
@@ -1293,7 +1298,7 @@ async function initValidator(){
     vSelGpu=localStorage.getItem('solara_gpu_tier')||'RTX 4090';
     if(!PLANS.find(p=>p.gpuTier===vSelGpu))vSelGpu=(PLANS[0]||{}).gpuTier||'RTX 4090';
     sel.value=vSelGpu;
-    sel.addEventListener('change',()=>{vSelGpu=sel.value;localStorage.setItem('solara_gpu_tier',vSelGpu);vCompat();calc();drawRewards();});
+    sel.addEventListener('change',()=>{vSelGpu=sel.value;localStorage.setItem('solara_gpu_tier',vSelGpu);if($('c_gpu'))$('c_gpu').value=vSelGpu;vCompat();calc(vSelGpu);drawRewards();});
   }
   vCompat();vWalletLabel();drawRewards();
   setInterval(()=>{drawRewards();if(WALLET&&Date.now()-lastRewardSync>5000)fetchRewards(true);},1000);
@@ -1377,7 +1382,7 @@ function renderStats(){
   if($('t_frames'))$('t_frames').textContent=fmt(active);
   if($('t_frames_s'))$('t_frames_s').textContent='live sessions';
   if($('t_usdc'))$('t_usdc').textContent=solr(paid,2);
-  if($('t_usdc_s'))$('t_usdc_s').textContent='$SOLR payouts';
+  if($('t_usdc_s'))$('t_usdc_s').textContent='$SOLR withdrawals';
   if($('t_jobs'))$('t_jobs').textContent=fmt(ever);
   if($('t_flops'))$('t_flops').textContent=usd(paidUsd());
   if($('n_gpus'))$('n_gpus').textContent=online;
@@ -1385,7 +1390,7 @@ function renderStats(){
   if($('n_active'))$('n_active').textContent=active;
   if($('n_active_s'))$('n_active_s').textContent='live sessions';
   if($('n_frames'))$('n_frames').textContent=solr(pending,2);
-  if($('n_frames_s'))$('n_frames_s').textContent='$SOLR awaiting payout';
+  if($('n_frames_s'))$('n_frames_s').textContent='$SOLR ready to withdraw';
   if($('n_usdc'))$('n_usdc').textContent=solr(paid,2);
   if($('n_usdc_s'))$('n_usdc_s').textContent='sent to users';
   if($('feedMeta'))$('feedMeta').textContent=activity.length?activity.length+' recent':'no withdrawals yet';
@@ -1422,7 +1427,7 @@ function renderProtocol(){
   $('steps').innerHTML=s.map(x=>`<div class="step"><span class="role">${x[1]}</span><div class="n">${x[0]}</div><h4>${x[2]}</h4><p>${x[3]}</p></div>`).join('');
 }
 function renderRoadmap(){
-  const r=[{p:'Phase 0',t:'GPU beta',s:'shipped',pts:['Wallet sessions','GPU plan rewards','Live dashboard']},{p:'Phase 1',t:'Mainnet rewards',s:'live',pts:['SOLR withdrawals','Auto-approved withdrawals','Admin controls']},{p:'Phase 2',t:'Provider scale',s:'next',pts:['More GPU plans','Provider reputation','Payout monitoring']},{p:'Phase 3',t:'Network maturity',s:'planned',pts:['More regions','Advanced validation','Expanded GPU fleet']}];
+  const r=[{p:'Phase 0',t:'GPU beta',s:'shipped',pts:['Wallet sessions','GPU plan rewards','Live dashboard']},{p:'Phase 1',t:'Mainnet rewards',s:'live',pts:['SOLR withdrawals','Auto-approved withdrawals','Admin controls']},{p:'Phase 2',t:'Provider scale',s:'next',pts:['More GPU plans','Provider reputation','Withdrawal monitoring']},{p:'Phase 3',t:'Network maturity',s:'planned',pts:['More regions','Advanced validation','Expanded GPU fleet']}];
   $('rmap').innerHTML=r.map(x=>`<div class="phase ${x.s==='live'?'live':''}"><span class="ts ${x.s}">${x.s}</span><div class="ph">${x.p}</div><h4>${x.t}</h4><ul>${x.pts.map(p=>`<li>${p}</li>`).join('')}</ul></div>`).join('');
 }
 function renderToken(){
@@ -1433,18 +1438,18 @@ function renderToken(){
   if($('dexLink'))$('dexLink').style.display='none';
   $('tk_price').textContent='$SOLR';
   $('tk_mcap').textContent='mainnet';
-  $('tk_staked').textContent=fmt(globalStats?.validatorsEverStarted||0)+' validators';
+  $('tk_staked').textContent=fmt(TOKEN.circulatingSupply)+' '+TOKEN.symbol;
   $('tk_bonded').textContent=usd(paidUsd());
-  const split=[{l:'Validator rewards',p:50,c:'#FF6A18'},{l:'Community & ecosystem',p:25,c:'#FFB061'},{l:'Treasury',p:15,c:'#E04E08'},{l:'Liquidity',p:10,c:'#F6C27E'}];let off=0;
+  const split=[{l:'Validator rewards',p:50,c:'#FF6A18'},{l:'Community &<br>ecosystem',p:25,c:'#FFB061'},{l:'Treasury',p:15,c:'#E04E08'},{l:'Liquidity',p:10,c:'#F6C27E'}];let off=0;
   $('donut').innerHTML=split.map(s=>{const el=`<circle cx="21" cy="21" r="15.9" fill="transparent" stroke="${s.c}" stroke-width="6.5" stroke-dasharray="${s.p} ${100-s.p}" stroke-dashoffset="${25-off}"/>`;off+=s.p;return el}).join('')+'<circle cx="21" cy="21" r="11.5" fill="#fff"/><text x="21" y="22.5" text-anchor="middle" font-size="5.5" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="700" fill="#181410">SOLR</text>';
   $('splitLegend').innerHTML=split.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span>${s.l} · <b>&nbsp;${s.p}%</b></div>`).join('');
   const mx=Math.max(...TOKEN.allocation.map(a=>a[1]));
-  $('alloc').innerHTML=TOKEN.allocation.map(a=>`<div class="ar"><span style="width:150px">${a[0]}</span><span class="track"><i style="width:${a[1]/mx*100}%"></i></span><span class="pct">${a[1]}%</span></div>`).join('');
+  $('alloc').innerHTML=TOKEN.allocation.map(a=>`<div class="ar"><span style="width:150px">${a[0].replace('Community & ecosystem','Community &<br>ecosystem')}</span><span class="track"><i style="width:${a[1]/mx*100}%"></i></span><span class="pct">${a[1]}%</span></div>`).join('');
   $('utility').innerHTML=['GPU validation rewards','Provider onboarding and reward-rate controls','Wallet-based withdrawals','Mainnet-beta network controls'].map(u=>`<li>${u}</li>`).join('');
 }
 function initCalc(){const sel=$('c_gpu');if(!sel)return;sel.innerHTML=PLANS.map(p=>`<option value="${esc(p.gpuTier)}">${esc(p.gpuTier)} · ${p.ratePerMinute} SOLR/min</option>`).join('');sel.value=vSelGpu;['c_gpu','c_hours','c_util','c_kwh'].forEach(id=>$(id)&&$(id).addEventListener('input',calc));calc();}
-function calc(){
-  const tier=$('c_gpu')?.value||vSelGpu;const p=PLANS.find(x=>x.gpuTier===tier)||selectedPlan();const m=PLAN_META[p.gpuTier]||{tdp:350,msrp:1000};const hours=+$('c_hours').value,kwh=+$('c_kwh').value/100,rate=Number(p.ratePerMinute||0);
+function calc(forceTier){
+  const tier=forceTier||$('c_gpu')?.value||vSelGpu;const p=PLANS.find(x=>x.gpuTier===tier)||selectedPlan();const m=PLAN_META[p.gpuTier]||{tdp:350,msrp:1000};const hours=+$('c_hours').value,kwh=+$('c_kwh').value/100,rate=Number(p.ratePerMinute||0);
   vSelGpu=tier;if($('v_gpu')&&$('v_gpu').value!==tier){$('v_gpu').value=tier;localStorage.setItem('solara_gpu_tier',tier);vCompat();drawRewards();}
   $('c_hours_v').textContent=hours+'h';$('c_util_v').textContent='100%';$('c_kwh_v').textContent='$'+kwh.toFixed(2)+'/kWh';
   const day=rate*60*hours,month=day*30,power=(m.tdp/1000)*hours*kwh,threshold=10/rate;

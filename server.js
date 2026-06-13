@@ -393,7 +393,7 @@ async function createClaimRequest(wallet, amountInput) {
   await requireNotBlacklisted(wallet);
   const settings = await settingsObject();
   if (boolVal(settings.PAUSE_REWARDS) && !boolVal(settings.ALLOW_PAYOUT_REQUESTS_WHEN_PAUSED)) {
-    throw new Error('Payout requests are paused.');
+    throw new Error('Withdrawals are paused.');
   }
   return withTx(async () => {
     const accrued = await accrueWallet(wallet);
@@ -401,17 +401,15 @@ async function createClaimRequest(wallet, amountInput) {
     const pending = BigInt(bal.pending_amount || '0');
     const amount = amountInput === undefined || amountInput === null || amountInput === '' ? pending : unitsFromTokens(amountInput);
     const min = unitsFromTokens(settings.MIN_PAYOUT_AMOUNT);
-    if (amount <= 0n) throw new Error('No pending rewards available to request');
-    if (amount > pending) throw new Error('Requested amount exceeds pending rewards');
-    if (amount < min) throw new Error(`Minimum payout is ${settings.MIN_PAYOUT_AMOUNT} SOLR. Keep validating to reach the payout threshold.`);
-    const openReq = await get('SELECT id, status FROM payout_requests WHERE wallet = ? AND status IN (?, ?) ORDER BY requested_at DESC LIMIT 1', [wallet, 'pending', 'approved']);
-    if (openReq) throw new Error('You already have a payout request pending approval.');
+    if (amount <= 0n) throw new Error('No pending rewards available to withdraw');
+    if (amount > pending) throw new Error('Withdrawal amount exceeds pending rewards');
+    if (amount < min) throw new Error(`Minimum withdrawal is ${settings.MIN_PAYOUT_AMOUNT} SOLR. Keep validating to reach the withdrawal threshold.`);
     const lastReq = await get('SELECT requested_at FROM payout_requests WHERE wallet = ? ORDER BY requested_at DESC LIMIT 1', [wallet]);
     if (lastReq) {
       const requestedAt = lastReq.requested_at ?? lastReq.requestedat;
       const elapsed = minutesBetween(requestedAt, nowIso());
       const cooldown = Number(settings.CLAIM_COOLDOWN_MINUTES);
-      if (elapsed < cooldown) throw new Error(`Please wait ${cooldown - elapsed} minutes before requesting another payout.`);
+      if (elapsed < cooldown) throw new Error(`Please wait ${cooldown - elapsed} minutes before starting another withdrawal.`);
     }
     const ts = nowIso();
     await run('UPDATE reward_balances SET pending_amount = ?, updated_at = ? WHERE wallet = ?', [(pending - amount).toString(), ts, wallet]);
@@ -474,7 +472,7 @@ function decodeRewardWalletSecretKey() {
 async function validateRewardWalletConfig() {
   const secretKey = decodeRewardWalletSecretKey();
   if (!secretKey) {
-    console.warn('Reward wallet private key not configured. Payout processing disabled.');
+    console.warn('Reward wallet private key not configured. Withdrawal processing disabled.');
     return;
   }
   const { Keypair } = await solanaWeb3();
@@ -487,7 +485,7 @@ async function validateRewardWalletConfig() {
 async function rewardWalletKeypair() {
   if (rewardWalletKeypairCache) return rewardWalletKeypairCache;
   const secretKey = decodeRewardWalletSecretKey();
-  if (!secretKey) throw new Error('Reward wallet private key not configured. Payout processing disabled.');
+  if (!secretKey) throw new Error('Reward wallet private key not configured. Withdrawal processing disabled.');
   const { Keypair } = await solanaWeb3();
   rewardWalletKeypairCache = Keypair.fromSecretKey(secretKey);
   return rewardWalletKeypairCache;
@@ -728,7 +726,7 @@ app.post('/api/admin/payouts/:id/approve', requireAdmin, async (req, res) => {
 });
 app.post('/api/admin/payouts/:id/reject', requireAdmin, async (req, res) => {
   const row = await get('SELECT * FROM payout_requests WHERE id = ? AND status IN (?, ?)', [req.params.id, 'pending', 'approved']);
-  if (!row) return res.status(404).json({ error: 'Payout request not found or already finalized' });
+  if (!row) return res.status(404).json({ error: 'Withdrawal not found or already finalized' });
   const ts = nowIso();
   const bal = mapBalance(await get('SELECT pending_amount FROM reward_balances WHERE wallet = ?', [row.wallet]));
   await run('UPDATE reward_balances SET pending_amount = ?, updated_at = ? WHERE wallet = ?', [(BigInt(bal.pending_amount || '0') + BigInt(row.amount)).toString(), ts, row.wallet]);
@@ -806,10 +804,10 @@ async function maybeStartAutoPayouts() {
   const settings = await settingsObject();
   if (boolVal(settings.ENABLE_AUTO_PAYOUTS)) {
     if (!rewardWalletPrivateKey()) {
-      console.warn('Reward wallet private key not configured. Auto payout scheduler disabled.');
+      console.warn('Reward wallet private key not configured. Auto withdrawal scheduler disabled.');
       return;
     }
-    autoTimer = setInterval(() => processApprovedPayouts('auto').catch(e => console.error('auto payout failed:', e.message || e)), PAYOUT_INTERVAL_MINUTES * 60000);
+    autoTimer = setInterval(() => processApprovedPayouts('auto').catch(e => console.error('auto withdrawal failed:', e.message || e)), PAYOUT_INTERVAL_MINUTES * 60000);
   }
 }
 
