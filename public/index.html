@@ -55,6 +55,10 @@ header.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(12px);backgroun
 .btn.ghost:hover{border-color:var(--brand);color:var(--brand-deep);background:var(--brand-soft);transform:translateY(-1px)}
 .btn.estimate-btn{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line2)!important;box-shadow:none!important}
 .btn.estimate-btn:hover{border-color:var(--brand)!important;color:var(--brand-deep)!important;background:var(--brand-soft)!important}
+.hero-ca{margin-top:14px;display:inline-flex;align-items:center;gap:10px;max-width:100%;padding:9px 12px;border:1px solid var(--brand-tint);border-radius:999px;background:rgba(255,255,255,.68);box-shadow:var(--shadow);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ink2)}
+.hero-ca b{color:var(--brand-deep);font-weight:800;letter-spacing:.04em}.hero-ca span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.copy-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--line2);background:#fff;color:var(--brand-deep);display:grid;place-items:center;cursor:pointer;flex:none}
+.copy-icon:hover{background:var(--brand-soft);border-color:var(--brand-tint)}
+.copy-icon svg{width:14px;height:14px;display:block}
 .icbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink2);text-decoration:none;transition:.15s}
 .icbtn svg{display:block}
 .icbtn:hover{border-color:var(--brand);color:var(--brand-deep);background:var(--brand-soft);transform:translateY(-1px)}
@@ -265,6 +269,7 @@ select:focus{outline:none;border-color:var(--brand)}
 .lk.live:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
 .copybtn{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;border:1px solid var(--line2);background:#fff;color:var(--brand-deep);border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap}
 .copybtn:hover{background:var(--brand-soft);border-color:var(--brand-tint)}
+.copybtn.copy-icon{padding:0;width:28px;height:28px;border-radius:50%}
 .donut{display:flex;align-items:center;gap:22px;margin-top:16px}
 .legend .li{display:grid;grid-template-columns:11px minmax(0,1fr) auto;align-items:center;gap:9px;padding:5px 0;font-size:13px}
 .legend .sw{width:11px;height:11px;border-radius:3px}.legend .label{min-width:0}.legend .pct{font-weight:800;white-space:nowrap}
@@ -460,6 +465,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   .hero{padding-top:38px!important;gap:28px}
   .hero h1{font-size:44px;max-width:10.5ch}
   .lede{font-size:16px}
+  .hero-ca{width:100%;border-radius:14px}.hero-ca span{font-size:11px}
   .strip{grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}
   .tile{padding:16px}
   .tile .v{font-size:24px}
@@ -529,6 +535,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
         <button class="btn" onclick="go('#validator')">Start validating →</button>
         <button class="btn ghost estimate-btn" onclick="go('#earn')">Estimate Rewards</button>
       </div>
+      <div class="hero-ca"><b>CA</b><span id="hero_ca">8dEo3xshMp3oWrTWkjFNJnDj489wBMeUCApkpRqLpump</span><button class="copy-icon" onclick="copyCa('hero_ca', this)" aria-label="Copy contract address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="10" height="10" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
       <div class="pills">
         <span class="pill"><b>Solana</b> mainnet</span><span class="pill"><b>$SOLR</b> rewards</span>
         <span class="pill"><b>GPU</b> validation</span><span class="pill">RTX · A100 · H100</span>
@@ -738,7 +745,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
       </div>
       <div class="card" style="padding:22px">
         <div class="olbl">Contract address</div>
-        <div class="addr" style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span id="tk_addr" style="word-break:break-all">—</span><button id="copyAddr" class="copybtn" onclick="copyAddr()">copy</button></div>
+        <div class="addr" style="display:flex;align-items:center;gap:10px;justify-content:space-between"><span id="tk_addr" style="word-break:break-all">—</span><button id="copyAddr" class="copybtn copy-icon" onclick="copyCa('tk_addr', this)" aria-label="Copy contract address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="10" height="10" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
         <div class="linkrow"><a id="dexLink" class="lk live" target="_blank" rel="noopener" style="display:none">View chart →</a></div>
         <div class="olbl" style="margin-top:22px">Token allocation</div>
         <div class="alloc" id="alloc"></div>
@@ -836,7 +843,7 @@ const TOKEN = {
   name: 'SOLARA',
 
   // Your SPL token mint (also set TOKEN_MINT in the server .env for Helius).
-  contract: '',                 // e.g. '5x...pump'
+  contract: '8dEo3xshMp3oWrTWkjFNJnDj489wBMeUCApkpRqLpump',
 
   // The Dexscreener link you'll attach (the "View chart" button).
   // If left '', it's auto-filled from Dexscreener once `contract` is set.
@@ -1114,7 +1121,13 @@ function renderProtocol(){const s=[['01','Requester','Lock escrow','A job — pr
   $('steps').innerHTML=s.map(x=>`<div class="step"><span class="role">${x[1]}</span><div class="n">${x[0]}</div><h4>${x[2]}</h4><p>${x[3]}</p></div>`).join('');}
 function fmtPrice(p){return p>=1?('$'+p.toFixed(4)):('$'+p.toPrecision(3))}
 function setTokenStats(price,mcap){$('tk_price').textContent=fmtPrice(price);$('tk_mcap').textContent=money(mcap);}
-function copyAddr(){if(!TOKEN.contract)return;navigator.clipboard&&navigator.clipboard.writeText(TOKEN.contract);const b=$('copyAddr');const t=b.textContent;b.textContent='copied ✓';setTimeout(()=>b.textContent=t,1400);}
+function copyCa(id,btn){
+  const value=($(id)?.textContent||TOKEN.contract||'').trim();
+  if(!value||value==='—')return;
+  navigator.clipboard&&navigator.clipboard.writeText(value);
+  if(btn){const old=btn.innerHTML;btn.textContent='✓';setTimeout(()=>{btn.innerHTML=old},1200);}
+}
+function copyAddr(){copyCa('tk_addr',$('copyAddr'));}
 async function fetchTokenMarket(){
   // 1) server endpoint — real price / market cap via Helius. Keys stay server-side.
   try{const r=await fetch('/api/token');if(r.ok){const d=await r.json();
@@ -1448,7 +1461,7 @@ function renderRoadmap(){
   $('rmap').innerHTML=r.map(x=>`<div class="phase ${x.s==='live'?'live':''}"><span class="ts ${x.s}">${x.s}</span><div class="ph">${x.p}</div><h4>${x.t}</h4><ul>${x.pts.map(p=>`<li>${p}</li>`).join('')}</ul></div>`).join('');
 }
 function renderToken(){
-  const mint=(cfg?.solana?.tokenMint)||TOKEN.contract||'—';
+  const mint=TOKEN.contract||(cfg?.solana?.tokenMint)||'—';
   const addr=$('tk_addr');
   if(addr){addr.textContent=mint;addr.style.opacity=mint==='—' ? .55 : 1;}
   if($('copyAddr'))$('copyAddr').style.display=mint==='—'?'none':'';
