@@ -266,7 +266,8 @@ select:focus{outline:none;border-color:var(--brand)}
 .copybtn{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;border:1px solid var(--line2);background:#fff;color:var(--brand-deep);border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap}
 .copybtn:hover{background:var(--brand-soft);border-color:var(--brand-tint)}
 .donut{display:flex;align-items:center;gap:22px;margin-top:16px}
-.legend .li{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px}.legend .sw{width:11px;height:11px;border-radius:3px}
+.legend .li{display:grid;grid-template-columns:11px minmax(0,1fr) auto;align-items:center;gap:9px;padding:5px 0;font-size:13px}
+.legend .sw{width:11px;height:11px;border-radius:3px}.legend .label{min-width:0}.legend .pct{font-weight:800;white-space:nowrap}
 .alloc .ar{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px}
 .alloc-community .alloc-mobile-break{display:inline}
 .alloc .track{flex:1;height:9px;background:var(--line);border-radius:6px;overflow:hidden}.alloc .track i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),#FFB061)}
@@ -295,6 +296,7 @@ select:focus{outline:none;border-color:var(--brand)}
 
 footer{border-top:1px solid var(--line);padding:38px 0;color:var(--muted);font-size:13px;margin-top:36px}
 .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.foot-copy{line-height:1.45;text-align:center}
 
 @media(max-width:980px){
   .hero{grid-template-columns:1fr;gap:34px}
@@ -475,8 +477,15 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
   .rmap{grid-template-columns:1fr}
   .alloc .ar>span:first-child{width:104px!important;line-height:1.25}
   .alloc-community .alloc-mobile-break{display:block}
-  .foot{flex-wrap:nowrap;align-items:center}
-  .foot .linkrow{margin-left:auto;flex-wrap:nowrap}
+  .donut{gap:14px;align-items:center}
+  .donut svg{width:96px;height:96px;flex:0 0 96px}
+  .legend{flex:1;min-width:0}
+  .legend .li{grid-template-columns:12px minmax(0,1fr) auto;gap:8px;font-size:13px;line-height:1.18;padding:7px 0}
+  .legend .label{white-space:normal;overflow-wrap:anywhere}
+  .legend .pct{font-size:13.5px}
+  .foot{display:grid;grid-template-columns:auto auto;align-items:center;gap:12px}
+  .foot .linkrow{justify-self:end;margin-left:0!important;flex-wrap:nowrap}
+  .foot-copy{grid-column:1 / -1;grid-row:2;text-align:left;font-size:12px;line-height:1.35;max-width:100%}
 }
 </style>
 
@@ -807,7 +816,7 @@ select,textarea,.seedbox{background:rgba(255,255,255,.55)!important;backdrop-fil
 
 <footer><div class="wrap foot">
   <div class="logo" style="font-size:18px"><div class="mark" style="width:23px;height:23px"></div>SOLARA</div>
-  <div>Live on Solana · GPU validation rewards · $SOLR · MIT.</div>
+  <div class="foot-copy">Live on Solana · GPU validation rewards · $SOLR · MIT.</div>
   <div class="linkrow" style="margin-top:0"><a class="icbtn" id="fxBtn" target="_blank" rel="noopener" title="X / Twitter" aria-label="X"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z"/></svg></a><a class="icbtn" id="fghBtn" href="https://github.com/jolliesol/canas-core" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.8-.01 3.18 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg></a></div>
 </div></footer>
 
@@ -1132,7 +1141,7 @@ function renderToken(){
   // settlement split donut
   const split=[{l:'Providers',p:90,c:'#FF6A18'},{l:'Verifiers',p:5,c:'#FFB061'},{l:'Protocol / treasury',p:5,c:'#E04E08'}];let off=0;
   $('donut').innerHTML=split.map(s=>{const el=`<circle cx="21" cy="21" r="15.9" fill="transparent" stroke="${s.c}" stroke-width="6.5" stroke-dasharray="${s.p} ${100-s.p}" stroke-dashoffset="${25-off}"/>`;off+=s.p;return el}).join('')+'<circle cx="21" cy="21" r="11.5" fill="#fff"/><text x="21" y="22.5" text-anchor="middle" font-size="5.5" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="700" fill="#181410">90/5/5</text>';
-  $('splitLegend').innerHTML=split.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span>${s.l} · <b>&nbsp;${s.p}%</b></div>`).join('');
+  $('splitLegend').innerHTML=split.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span><span class="label">${s.l}</span><span class="pct">${s.p}%</span></div>`).join('');
   // allocation (from config, scaled to the max for bar widths)
   const mx=Math.max(...TOKEN.allocation.map(a=>a[1]));
   $('alloc').innerHTML=TOKEN.allocation.map(a=>`<div class="ar"><span style="width:150px">${allocLabel(a[0])}</span><span class="track"><i style="width:${a[1]/mx*100}%"></i></span><span class="pct">${a[1]}%</span></div>`).join('');
@@ -1450,7 +1459,7 @@ function renderToken(){
   $('tk_bonded').textContent=usd(paidUsd());
   const split=[{l:'Validator rewards',p:50,c:'#FF6A18'},{l:'Community & ecosystem',p:25,c:'#FFB061'},{l:'Treasury',p:15,c:'#E04E08'},{l:'Liquidity',p:10,c:'#F6C27E'}];let off=0;
   $('donut').innerHTML=split.map(s=>{const el=`<circle cx="21" cy="21" r="15.9" fill="transparent" stroke="${s.c}" stroke-width="6.5" stroke-dasharray="${s.p} ${100-s.p}" stroke-dashoffset="${25-off}"/>`;off+=s.p;return el}).join('')+'<circle cx="21" cy="21" r="11.5" fill="#fff"/><text x="21" y="22.5" text-anchor="middle" font-size="5.5" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="700" fill="#181410">SOLR</text>';
-  $('splitLegend').innerHTML=split.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span>${s.l} · <b>&nbsp;${s.p}%</b></div>`).join('');
+  $('splitLegend').innerHTML=split.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span><span class="label">${s.l}</span><span class="pct">${s.p}%</span></div>`).join('');
   const mx=Math.max(...TOKEN.allocation.map(a=>a[1]));
   $('alloc').innerHTML=TOKEN.allocation.map(a=>`<div class="ar"><span style="width:150px">${allocLabel(a[0])}</span><span class="track"><i style="width:${a[1]/mx*100}%"></i></span><span class="pct">${a[1]}%</span></div>`).join('');
   $('utility').innerHTML=['GPU validation rewards','Provider onboarding and reward-rate controls','Wallet-based withdrawals','Mainnet-beta network controls'].map(u=>`<li>${u}</li>`).join('');
