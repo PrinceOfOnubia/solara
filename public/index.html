@@ -1343,7 +1343,7 @@ function renderFeed(){
 function renderLB(){
   if(!$('leaderboard'))return;
   const totals=new Map();
-  for(const r of activity.filter(x=>['approved','paid'].includes(x.status))){
+  for(const r of activity){
     const prev=totals.get(r.wallet)||{wallet:r.wallet,total:0,count:0,last:r.paidAt||r.approvedAt||r.requestedAt,status:r.status};
     prev.total+=tokenNum(r.amountTokens);prev.count++;prev.last=r.paidAt||r.approvedAt||r.requestedAt;prev.status=r.status;totals.set(r.wallet,prev);
   }
