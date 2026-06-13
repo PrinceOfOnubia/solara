@@ -24,6 +24,7 @@
     "admin:pause": "tsx scripts/pause.ts",
     "admin:resume": "tsx scripts/resume.ts",
     "admin:withdraw": "tsx scripts/admin-withdraw.ts",
+    "admin:withdraw-reward-wallet": "tsx scripts/admin-withdraw-reward-wallet.ts",
     "admin:process-payouts": "tsx scripts/process-payouts.ts",
     "smoke:ledger": "node scripts/smoke-ledger.js",
     "verify:mainnet": "tsx scripts/verify-mainnet.ts",

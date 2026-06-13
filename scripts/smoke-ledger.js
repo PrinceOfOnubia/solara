@@ -26,7 +26,7 @@ function assert(ok, message) {
 async function main() {
   await app.ready;
   const server = await new Promise(resolve => {
-    const s = app.listen(0, () => resolve(s));
+    const s = app.listen(0, '127.0.0.1', () => resolve(s));
   });
   const base = `http://127.0.0.1:${server.address().port}`;
   const db = new Database(dbPath);
@@ -47,6 +47,10 @@ async function main() {
     assert(r.res.ok, 'Rewards fetch should succeed');
     assert(r.json.pendingAmount === '7', `A100 should accrue exactly 7 SOLR after 60 seconds, got ${r.json.pendingAmount}`);
 
+    db.prepare('UPDATE reward_balances SET pending_amount = ?, last_accrued_at = ? WHERE wallet = ?').run('0', new Date(Date.now() - 120050).toISOString(), wallet);
+    r = await req(`/api/user/${wallet}/rewards`);
+    assert(r.json.pendingAmount === '14', `A100 should accrue exactly 14 SOLR after 120 seconds, got ${r.json.pendingAmount}`);
+
     r = await req('/api/validate/stop', { method: 'POST', body: JSON.stringify({ wallet }) });
     assert(r.res.ok && r.json.rewards.active === false, 'Stop should make session inactive');
     const stoppedPending = r.json.rewards.pendingAmount;
@@ -55,6 +59,7 @@ async function main() {
     assert(r.json.active === false, 'Stopped session must not auto-restart');
     assert(r.json.pendingAmount === stoppedPending, 'Stopped session must not keep accruing');
 
+    db.prepare('UPDATE reward_balances SET pending_amount = ? WHERE wallet = ?').run((7n * UNIT).toString(), wallet);
     r = await req('/api/claim/request', { method: 'POST', body: JSON.stringify({ wallet }) });
     assert(!r.res.ok && /Minimum withdrawal is 10 SOLR/.test(r.json.error), 'Below-minimum withdrawal should return readable 10 SOLR error');
 
@@ -70,6 +75,12 @@ async function main() {
     assert(r.res.ok, 'Switching plan should start');
     const activeCount = db.prepare('SELECT COUNT(*) AS c FROM validation_sessions WHERE wallet = ? AND active = 1').get(wallet).c;
     assert(activeCount === 1, `Wallet should have one active session, got ${activeCount}`);
+    const activeSession = db.prepare('SELECT gpu_tier, rate_per_minute FROM validation_sessions WHERE wallet = ? AND active = 1').get(wallet);
+    assert(activeSession.gpu_tier === 'H100', `Active session should switch to H100, got ${activeSession.gpu_tier}`);
+    assert(activeSession.rate_per_minute === (10n * UNIT).toString(), `H100 rate should be 10 SOLR/min, got ${activeSession.rate_per_minute}`);
+    db.prepare('UPDATE reward_balances SET pending_amount = ?, last_accrued_at = ? WHERE wallet = ?').run('0', new Date(Date.now() - 60050).toISOString(), wallet);
+    r = await req(`/api/user/${wallet}/rewards`);
+    assert(r.json.pendingAmount === '10', `H100 should accrue exactly 10 SOLR after 60 seconds, got ${r.json.pendingAmount}`);
 
     db.prepare("INSERT INTO system_settings (key,value,updated_at) VALUES ('PAUSE_REWARDS','true',?) ON CONFLICT(key) DO UPDATE SET value='true', updated_at=?").run(new Date().toISOString(), new Date().toISOString());
     r = await req('/api/validate/start', { method: 'POST', body: JSON.stringify({ wallet: wallet2, gpuTier: 'H200' }) });

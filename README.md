@@ -2,8 +2,8 @@
 
 SOLARA runs a GPU validation rewards flow. Users connect a Solana wallet,
 choose a GPU plan, start a validation session, accrue SOLR from server-tracked
-session time, and request a payout. Eligible payout requests auto-approve for
-batch payout from the reward wallet.
+session time, and start a withdrawal once they reach the minimum threshold.
+Eligible withdrawals auto-approve for batch processing from the reward wallet.
 
 No Anchor deployment is required for the current beta flow. The Anchor program in
 `programs/solara_rewards` is kept as optional future on-chain vault mode.
@@ -32,13 +32,13 @@ Flow:
 3. User clicks `Start validating`.
 4. The server creates a validation session.
 5. The server accrues pending SOLR from elapsed time and the selected plan.
-6. User clicks `Request Payout`.
-7. Pending rewards are reserved in `payout_requests` as approved requests.
-8. Admin can reject a request in `/admin` if needed.
-9. Admin processes a batch payout from the reward wallet SOLR ATA to user ATAs.
+6. User clicks `Withdraw`.
+7. Pending rewards are reserved in `payout_requests` as approved withdrawals.
+8. Admin can reject a withdrawal in `/admin` if needed.
+9. Admin processes a batch withdrawal from the reward wallet SOLR ATA to user ATAs.
 
 The frontend shows production values only for user rewards: pending rewards,
-paid rewards, active plan, and payout history all come from the server and
+paid rewards, active plan, and withdrawal history all come from the server and
 database state.
 
 ## Database
@@ -190,8 +190,8 @@ Steps:
 
 1. Connect the admin wallet.
 2. Sign the admin authorization message.
-3. Review summary cards and reward wallet balance.
-4. Review or reject approved payout requests.
+3. Review summary cards and withdrawal wallet balance.
+4. Review or reject approved withdrawals.
 5. Click `Process approved batch` to send SOLR to users.
 6. Update GPU reward rates when needed.
 7. Pause/resume rewards during incidents.
@@ -207,10 +207,10 @@ Emergency controls:
 - Pause blocks new validation sessions.
 - Blacklist blocks a wallet from starting sessions or requesting payouts.
 - Rejecting a payout returns the reserved amount to the user's pending balance.
-- Audit logs record pause, resume, rate updates, payout approval/rejection,
+- Audit logs record pause, resume, rate updates, withdrawal approval/rejection,
   batch processing, blacklist changes, and safety setting updates.
 
-## Payout Processing
+## Withdrawal Processing
 
 Manual local batch:
 
@@ -238,7 +238,17 @@ REWARD_WALLET_PRIVATE_KEY=<base58-private-key>
 
 The batch processor pays approved requests only. It creates the user SOLR ATA if
 needed, transfers SOLR from the reward wallet ATA, stores the transaction
-signature, and marks failed payouts with an error.
+signature, and marks failed withdrawals with an error.
+
+Emergency reward-wallet withdrawal:
+
+```bash
+npm run admin:withdraw-reward-wallet -- <destination-wallet-or-token-account> <amount-solr>
+```
+
+This helper uses `REWARD_WALLET_PRIVATE_KEY`, sends SOLR from the reward wallet
+ATA, and logs the transaction signature. Keep it local or backend-only; never
+expose the reward wallet private key to Vercel.
 
 ## Deployment Order
 
@@ -252,8 +262,8 @@ signature, and marks failed payouts with an error.
 8. Verify `/api/config`.
 9. Verify `/api/stats/global`.
 10. Test `Start validating` with a small wallet.
-11. Wait briefly and test `Request Payout`.
-12. Connect `/admin`, review the auto-approved request, and process a tiny payout.
+11. Wait briefly and test `Withdraw`.
+12. Connect `/admin`, review the auto-approved withdrawal, and process a tiny batch.
 13. Confirm reward wallet SOLR decreases.
 14. Confirm user SOLR ATA balance increases.
 

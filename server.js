@@ -7,12 +7,14 @@ const { AsyncLocalStorage } = require('async_hooks');
 const Database = require('better-sqlite3');
 const { Pool } = require('pg');
 const nacl = require('tweetnacl');
+const crypto = require('crypto');
 const bs58Module = require('bs58');
 const bs58 = bs58Module.default || bs58Module;
 
 let web3Promise;
 let splTokenPromise;
 const usedAdminMessages = new Map();
+const adminSessions = new Map();
 
 function solanaWeb3() {
   if (!web3Promise) web3Promise = import('@solana/web3.js');
@@ -422,31 +424,53 @@ function decodeBase64(s) {
   return Buffer.from(String(s || ''), 'base64');
 }
 async function verifyAdminSignature(req) {
-  if (!ADMIN_WALLET_PUBLIC_KEY) return null;
+  if (!ADMIN_WALLET_PUBLIC_KEY) throw new Error('ADMIN_WALLET_PUBLIC_KEY is not configured.');
   const wallet = req.headers['x-admin-wallet'];
   const message64 = req.headers['x-admin-message'];
   const signature64 = req.headers['x-admin-signature'];
-  if (!wallet || wallet !== ADMIN_WALLET_PUBLIC_KEY || !message64 || !signature64) return null;
+  if (!wallet || !message64 || !signature64) throw new Error('Admin signature is missing. Sign admin auth first.');
+  if (wallet !== ADMIN_WALLET_PUBLIC_KEY) throw new Error('Wrong admin wallet. Connect ADMIN_WALLET_PUBLIC_KEY.');
   const message = decodeBase64(message64);
   const key = `${wallet}:${message64}:${signature64}`;
   const now = Date.now();
   for (const [k, exp] of usedAdminMessages) if (exp <= now) usedAdminMessages.delete(k);
-  if (usedAdminMessages.has(key)) throw new Error('Admin signature replay rejected');
+  if (usedAdminMessages.has(key)) throw new Error('Admin signature replay rejected. Sign again.');
   const text = message.toString('utf8');
   const tsMatch = text.match(/Timestamp:\s*(.+)$/m);
   const nonceMatch = text.match(/Nonce:\s*([A-Za-z0-9._:-]+)/m);
-  if (!text.includes(`Wallet: ${wallet}`) || !tsMatch || !nonceMatch) return null;
+  if (!text.includes(`Wallet: ${wallet}`) || !tsMatch || !nonceMatch) throw new Error('Signature rejected.');
   const ageMs = Math.abs(now - Date.parse(tsMatch[1]));
-  if (!Number.isFinite(ageMs) || ageMs > 5 * 60 * 1000) return null;
+  if (!Number.isFinite(ageMs) || ageMs > 5 * 60 * 1000) throw new Error('Admin auth expired. Sign again.');
   const { PublicKey } = await solanaWeb3();
   const ok = nacl.sign.detached.verify(message, new Uint8Array(decodeBase64(signature64)), new PublicKey(wallet).toBytes());
-  if (!ok) return null;
+  if (!ok) throw new Error('Signature rejected.');
   usedAdminMessages.set(key, now + 5 * 60 * 1000);
   return wallet;
 }
+function cleanupAdminSessions() {
+  const now = Date.now();
+  for (const [token, session] of adminSessions) if (!session || session.expiresAt <= now) adminSessions.delete(token);
+}
+function createAdminSession(wallet) {
+  cleanupAdminSessions();
+  const token = crypto.randomBytes(32).toString('base64url');
+  const expiresAt = Date.now() + 30 * 60 * 1000;
+  adminSessions.set(token, { wallet, expiresAt });
+  return { token, expiresAt };
+}
+function adminSessionWallet(req) {
+  cleanupAdminSessions();
+  const auth = String(req.headers.authorization || '');
+  const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
+  if (!token) return null;
+  const session = adminSessions.get(token);
+  if (!session) throw new Error('Admin auth expired. Sign again.');
+  if (session.wallet !== ADMIN_WALLET_PUBLIC_KEY) throw new Error('Wrong admin wallet. Connect ADMIN_WALLET_PUBLIC_KEY.');
+  return session.wallet;
+}
 async function requireAdmin(req, res, next) {
   try {
-    const wallet = await verifyAdminSignature(req);
+    const wallet = adminSessionWallet(req) || await verifyAdminSignature(req);
     if (wallet) {
       req.adminWallet = wallet;
       return next();
@@ -688,6 +712,15 @@ app.get('/api/stats/activity', async (_req, res) => {
   res.json({ activity: rows.map(r => ({ ...r, requestedAt: r.requestedAt ?? r.requestedat, amountTokens: tokensFromUnits(r.amount) })) });
 });
 
+app.post('/api/admin/auth', async (req, res) => {
+  try {
+    const wallet = await verifyAdminSignature(req);
+    const session = createAdminSession(wallet);
+    res.json({ ok: true, wallet, token: session.token, expiresAt: new Date(session.expiresAt).toISOString() });
+  } catch (e) {
+    res.status(401).json({ error: String(e.message || e) });
+  }
+});
 app.get('/api/admin/summary', requireAdmin, async (_req, res) => res.json(await adminSummary()));
 app.get('/api/admin/settings', requireAdmin, async (_req, res) => res.json({ settings: await settingsObject() }));
 app.post('/api/admin/settings', requireAdmin, async (req, res) => {
